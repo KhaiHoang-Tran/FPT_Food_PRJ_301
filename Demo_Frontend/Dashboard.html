@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FPT Food - Dashboard Quản lý</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* --- 1. CẤU HÌNH CHUNG --- */
+      :root {
+        --primary: #ff6600;
+        --bg-page: #f5f7fa;
+        --text-dark: #333;
+        --border-radius: 8px;
+        --success: #28a745; /* Màu xanh lá (Trống) */
+        --danger: #dc3545; /* Màu đỏ (Đang dùng) */
+        --warning: #ffc107; /* Màu vàng (Đã đặt) */
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+      }
+      body {
+        background-color: var(--bg-page);
+        color: var(--text-dark);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      /* --- 2. HEADER --- */
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: white;
+        padding: 15px 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+      }
+      .brand h1 {
+        color: var(--primary);
+        font-size: 24px;
+      }
+      .brand p {
+        font-size: 13px;
+        color: #777;
+      }
+      .btn-logout {
+        padding: 8px 15px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      /* --- 3. NAVIGATION TABS --- */
+      .nav-tabs {
+        display: flex;
+        background: #e9ecef;
+        border-radius: 30px;
+        padding: 5px;
+        margin-bottom: 30px;
+      }
+      .tab-btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 12px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: 0.3s;
+      }
+      .tab-btn.active {
+        background: white;
+        color: var(--text-dark);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .tab-btn i {
+        margin-right: 8px;
+      }
+
+      /* --- 4. CONTENT SECTIONS (Ẩn/Hiện) --- */
+      .section-content {
+        display: none;
+        animation: fadeIn 0.3s;
+      }
+      .section-content.active {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* --- 5. STYLE RIÊNG: QUẢN LÝ BÀN --- */
+      .table-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+      }
+      .table-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 20px;
+        border: 1px solid #eee;
+        position: relative;
+      }
+
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+      .badge {
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+      }
+      .badge.empty {
+        background: var(--success);
+      }
+      .badge.busy {
+        background: var(--danger);
+      }
+      .badge.booked {
+        background: var(--warning);
+        color: #333;
+      }
+
+      .form-select {
+        width: 100%;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        background: #f9f9f9;
+        margin-bottom: 15px;
+      }
+
+      .order-summary {
+        background: #fff5f0;
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #555;
+      }
+      .order-total {
+        font-weight: bold;
+        color: var(--primary);
+        margin-top: 5px;
+        display: block;
+      }
+
+      /* --- 6. STYLE RIÊNG: QUẢN LÝ MÓN ĂN --- */
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .btn-add {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+
+      .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      .data-table th,
+      .data-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+      }
+      .data-table th {
+        background: #f8f9fa;
+        font-weight: 600;
+        color: #555;
+      }
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-right: 5px;
+      }
+      .action-btn:hover {
+        background: #f0f0f0;
+      }
+
+      /* --- 7. STYLE RIÊNG: HÓA ĐƠN --- */
+      .bill-card {
+        background: white;
+        border-radius: var(--border-radius);
+        padding: 25px;
+        margin-bottom: 20px;
+        border: 1px solid #eee;
+      }
+      .bill-header {
+        display: flex;
+        justify-content: space-between;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+        font-weight: bold;
+        font-size: 18px;
+      }
+      .bill-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+      .bill-total {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #eee;
+        font-weight: bold;
+        font-size: 18px;
+        color: var(--primary);
+      }
+      .btn-pay {
+        width: 100%;
+        margin-top: 20px;
+        padding: 12px;
+        background: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <h1>FPT Food - Dashboard</h1>
+        <p>Quản lý nhà hàng</p>
+      </div>
+      <button class="btn-logout" onclick="window.location.href = 'login.html'">
+        <i class="fas fa-sign-out-alt"></i> Đăng xuất
+      </button>
+    </header>
+
+    <div class="container">
+      <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchTab('tables')">
+          <i class="fas fa-chair"></i> Quản lý bàn
+        </button>
+        <button class="tab-btn" onclick="switchTab('food')">
+          <i class="fas fa-utensils"></i> Quản lý món ăn
+        </button>
+        <button class="tab-btn" onclick="switchTab('bills')">
+          <i class="fas fa-file-invoice-dollar"></i> Hóa đơn
+        </button>
+      </div>
+
+      <section id="tables" class="section-content active">
+        <h3 style="margin-bottom: 10px">Danh sách bàn</h3>
+        <p style="color: #777; margin-bottom: 20px">
+          Quản lý trạng thái các bàn trong nhà hàng
+        </p>
+
+        <div class="table-grid" id="tableGrid"></div>
+      </section>
+
+      <section id="food" class="section-content">
+        <div class="toolbar">
+          <div>
+            <h3>Quản lý món ăn</h3>
+            <p style="color: #777">Thêm, sửa, xóa món ăn trong menu</p>
+          </div>
+          <button class="btn-add">
+            <i class="fas fa-plus"></i> Thêm món mới
+          </button>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tên món</th>
+              <th>Danh mục</th>
+              <th>Giá</th>
+              <th>Đánh giá</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="foodTableBody"></tbody>
+        </table>
+      </section>
+
+      <section id="bills" class="section-content">
+        <h3 style="margin-bottom: 10px">Hóa đơn các bàn</h3>
+        <p style="color: #777; margin-bottom: 20px">
+          Xem và thanh toán hóa đơn
+        </p>
+
+        <div id="billList"></div>
+      </section>
+    </div>
+
+    <script>
+      // --- 1. DỮ LIỆU GIẢ LẬP (MOCK DATA) ---
+      const tablesData = [
+        { id: 1, name: "Bàn 1", status: "empty", items: [] },
+        {
+          id: 2,
+          name: "Bàn 2",
+          status: "busy",
+          items: [
+            { name: "Pizza Hải Sản Đặc Biệt", qty: 2, price: 189000 },
+            { name: "Mì Ý Sốt Bò Bằm", qty: 1, price: 75000 },
+          ],
+        },
+        { id: 3, name: "Bàn 3", status: "booked", items: [] },
+        { id: 4, name: "Bàn 4", status: "empty", items: [] },
+        {
+          id: 5,
+          name: "Bàn 5",
+          status: "busy",
+          items: [{ name: "Phở Bò Đặc Biệt", qty: 3, price: 65000 }],
+        },
+        { id: 6, name: "Bàn 6", status: "empty", items: [] },
+      ];
+
+      const foodData = [
+        {
+          name: "Pizza Hải Sản Đặc Biệt",
+          cat: "Pizza",
+          price: "189.000đ",
+          rate: 4.8,
+        },
+        {
+          name: "Burger Bò Phô Mai",
+          cat: "Burger",
+          price: "95.000đ",
+          rate: 4.6,
+        },
+        {
+          name: "Combo Sushi Cao Cấp",
+          cat: "Nhật Bản",
+          price: "259.000đ",
+          rate: 4.9,
+        },
+        { name: "Mì Ý Sốt Bò Bằm", cat: "Pasta", price: "75.000đ", rate: 4.5 },
+        {
+          name: "Salad Rau Củ Tươi",
+          cat: "Salad",
+          price: "65.000đ",
+          rate: 4.4,
+        },
+      ];
+
+      // --- 2. HÀM CHUYỂN TAB ---
+      function switchTab(tabId) {
+        // Ẩn tất cả nội dung
+        document
+          .querySelectorAll(".section-content")
+          .forEach((el) => el.classList.remove("active"));
+        // Bỏ active ở nút bấm
+        document
+          .querySelectorAll(".tab-btn")
+          .forEach((el) => el.classList.remove("active"));
+
+        // Hiện tab được chọn
+        document.getElementById(tabId).classList.add("active");
+        // Active nút bấm tương ứng
+        event.currentTarget.classList.add("active");
+      }
+
+      // --- 3. RENDER TAB: QUẢN LÝ BÀN ---
+      function renderTables() {
+        const container = document.getElementById("tableGrid");
+        let html = "";
+
+        tablesData.forEach((table) => {
+          let badgeClass =
+            table.status === "empty"
+              ? "empty"
+              : table.status === "busy"
+                ? "busy"
+                : "booked";
+          let statusText =
+            table.status === "empty"
+              ? "Trống"
+              : table.status === "busy"
+                ? "Đang dùng"
+                : "Đã đặt";
+
+          // Tính tổng tiền nếu đang dùng
+          let total = 0;
+          let summaryHtml = "";
+          if (table.status === "busy") {
+            table.items.forEach((item) => (total += item.price * item.qty));
+            summaryHtml = `
+                        <div class="order-summary">
+                            <strong>Món đã gọi:</strong><br>
+                            ${table.items.map((i) => `${i.name} x${i.qty}`).join("<br>")}
+                            <span class="order-total">Tổng: ${total.toLocaleString()}đ</span>
+                        </div>
+                    `;
+          }
+
+          html += `
+                    <div class="table-card">
+                        <div class="table-header">
+                            <b>${table.name}</b>
+                            <span class="badge ${badgeClass}">${statusText}</span>
+                        </div>
+                        <div style="margin-bottom: 5px; font-size:13px; font-weight:600;">Trạng thái</div>
+                        <select class="form-select">
+                            <option ${table.status === "empty" ? "selected" : ""}>Trống</option>
+                            <option ${table.status === "busy" ? "selected" : ""}>Đang dùng</option>
+                            <option ${table.status === "booked" ? "selected" : ""}>Đã đặt</option>
+                        </select>
+                        ${summaryHtml}
+                    </div>
+                `;
+        });
+        container.innerHTML = html;
+      }
+
+      // --- 4. RENDER TAB: QUẢN LÝ MÓN ĂN ---
+      function renderFood() {
+        const tbody = document.getElementById("foodTableBody");
+        let html = "";
+        foodData.forEach((food) => {
+          html += `
+                    <tr>
+                        <td style="font-weight:600;">${food.name}</td>
+                        <td>${food.cat}</td>
+                        <td>${food.price}</td>
+                        <td style="color:#ffc107;"><i class="fas fa-star"></i> ${food.rate}</td>
+                        <td>
+                            <button class="action-btn"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn" style="color:red;"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+        });
+        tbody.innerHTML = html;
+      }
+
+      // --- 5. RENDER TAB: HÓA ĐƠN ---
+      function renderBills() {
+        const container = document.getElementById("billList");
+        let html = "";
+
+        // Chỉ lấy các bàn đang có người ngồi (busy)
+        const busyTables = tablesData.filter((t) => t.status === "busy");
+
+        busyTables.forEach((table) => {
+          let total = 0;
+          let itemsHtml = table.items
+            .map((item) => {
+              let itemTotal = item.qty * item.price;
+              total += itemTotal;
+              return `
+                        <div class="bill-item">
+                            <span>${item.name} (x${item.qty})</span>
+                            <span>${itemTotal.toLocaleString()}đ</span>
+                        </div>
+                    `;
+            })
+            .join("");
+
+          html += `
+                    <div class="bill-card">
+                        <div class="bill-header">
+                            <span>${table.name}</span>
+                            <span class="badge busy">Đang dùng</span>
+                        </div>
+                        ${itemsHtml}
+                        <div class="bill-total">
+                            <span>Tổng cộng:</span>
+                            <span>${total.toLocaleString()}đ</span>
+                        </div>
+                        <button class="btn-pay" onclick="alert('Đã thanh toán cho ${table.name}')"><i class="fas fa-money-bill-wave"></i> Thanh toán</button>
+                    </div>
+                `;
+        });
+        container.innerHTML = html;
+      }
+
+      // --- KHỞI CHẠY ---
+      renderTables();
+      renderFood();
+      renderBills();
+    </script>
+  </body>
+</html>

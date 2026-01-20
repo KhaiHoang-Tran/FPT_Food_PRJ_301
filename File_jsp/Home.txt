@@ -1,0 +1,355 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.ArrayList" %>
+<%
+    // --- 1. KIỂM TRA SESSION (BẢO MẬT) ---
+    // Kiểm tra xem user đã đăng nhập chưa
+    Object currentUser = session.getAttribute("USER_NAME"); // Key này phải khớp với lúc Login
+    
+    // Nếu chưa đăng nhập -> Đá về trang Login
+    if (currentUser == null) {
+        response.sendRedirect("Login.jsp");
+        return; 
+    }
+    
+    // --- 2. LẤY DỮ LIỆU TỪ SERVLET GỬI SANG ---
+    // Servlet HomeServlet sẽ query DB và gửi list món ăn sang đây
+    List<?> foodListFromDB = (List<?>) request.getAttribute("FOOD_LIST");
+    
+    // Lấy từ khóa tìm kiếm (nếu có) để hiển thị lại vào ô input
+    String searchKeyword = request.getParameter("keyword");
+    if(searchKeyword == null) searchKeyword = "";
+%>
+
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FPT Food - Đặt món</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* --- GIỮ NGUYÊN CSS NHƯ CŨ --- */
+      :root { --primary: #ff6600; --bg-light: #f9f9f9; --text-dark: #333; --border-radius: 12px; --shadow: 0 4px 12px rgba(0, 0, 0, 0.05); }
+      * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+      body { background-color: #fff; color: var(--text-dark); padding-bottom: 80px; overflow-x: hidden; }
+      .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+      header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .logo { color: var(--primary); font-size: 24px; font-weight: 800; }
+      .table-info { background: #f0f0f0; padding: 5px 12px; border-radius: 8px; margin-left: 10px; font-size: 14px; color: #555; }
+      .header-right { display: flex; gap: 10px; align-items: center; }
+      .time-badge { background: #fff0e6; color: #d95c00; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 500; }
+      .btn-logout { padding: 8px 16px; border: 1px solid #ddd; background: white; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 5px; text-decoration: none; color: #333; font-size: 14px;}
+      .nav-tabs { display: flex; background: #f0f0f0; border-radius: 30px; padding: 4px; margin-bottom: 30px; }
+      .nav-item { flex: 1; text-align: center; padding: 12px; border-radius: 25px; cursor: pointer; color: #777; font-weight: 600; transition: 0.3s; }
+      .nav-item i { margin-right: 8px; }
+      .nav-item.active { background: white; color: var(--text-dark); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); }
+      .view-section { display: none; animation: fadeIn 0.3s; }
+      .view-section.active { display: block; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      .search-box { position: relative; margin-bottom: 20px; }
+      .search-box input { width: 100%; padding: 14px 20px 14px 45px; border-radius: var(--border-radius); border: none; background: #f5f5f5; outline: none; }
+      .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
+      .categories { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 20px; scrollbar-width: none; }
+      .categories::-webkit-scrollbar { display: none; }
+      .cat-chip { white-space: nowrap; padding: 10px 24px; background: #f5f5f5; border-radius: 25px; font-weight: 500; cursor: pointer; transition: 0.2s; user-select: none; }
+      .cat-chip.active { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(255, 102, 0, 0.3); }
+      .cat-chip:hover { background: #ffe0cc; color: var(--primary); }
+      .cat-chip.active:hover { background: var(--primary); color: white; }
+      .banner { background: linear-gradient(90deg, #ff6600 0%, #ff3300 100%); color: white; padding: 30px; border-radius: var(--border-radius); margin-bottom: 30px; }
+      .food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 24px; min-height: 300px; }
+      .food-card { border: 1px solid #eee; border-radius: var(--border-radius); overflow: hidden; background: white; transition: 0.2s; display: flex; flex-direction: column; }
+      .food-card:hover { transform: translateY(-5px); box-shadow: var(--shadow); }
+      .card-img-top { height: 180px; width: 100%; object-fit: cover; }
+      .card-body { padding: 15px; flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+      .price { color: var(--primary); font-weight: bold; font-size: 16px; }
+      .btn-add { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+      .btn-add:active { transform: scale(0.95); }
+      .page-header { margin-bottom: 20px; }
+      .page-header h2 { display: flex; align-items: center; gap: 10px; font-size: 20px; }
+      .empty-state { background: #fff; border: 1px solid #eee; border-radius: var(--border-radius); padding: 60px 20px; text-align: center; }
+      .empty-icon { font-size: 60px; color: #ddd; margin-bottom: 20px; }
+      .cart-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 100; opacity: 0; visibility: hidden; transition: 0.3s; }
+      .cart-sidebar { position: fixed; top: 0; right: -400px; width: 380px; max-width: 90%; height: 100%; background: white; z-index: 101; padding: 20px; transition: 0.3s; box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; }
+      .cart-open .cart-overlay { opacity: 1; visibility: visible; }
+      .cart-open .cart-sidebar { right: 0; }
+      .cart-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #eee; margin-bottom: 15px; }
+      .cart-items { flex: 1; overflow-y: auto; }
+      .cart-item { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #f9f9f9; padding-bottom: 10px; }
+      .cart-footer { margin-top: auto; border-top: 1px solid #eee; padding-top: 15px; }
+      .btn-checkout { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+      .fab-cart { position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; box-shadow: 0 5px 20px rgba(255, 102, 0, 0.4); cursor: pointer; border: none; z-index: 90; }
+      .cart-count { position: absolute; top: -5px; right: -5px; background: red; color: white; font-size: 12px; padding: 4px 8px; border-radius: 10px; border: 2px solid white; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div style="display: flex; align-items: center">
+          <div class="logo">FPT Food</div>
+          <div class="table-info">
+            Xin chào: <span style="color: var(--primary); font-weight:bold;">
+                <%= currentUser.toString() %>
+            </span>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="time-badge"><i class="far fa-clock"></i> 15-20 phút</div>
+          
+          <a href="LogoutServlet" class="btn-logout">
+            <i class="fas fa-sign-out-alt"></i> Đăng xuất
+          </a>
+        </div>
+      </header>
+
+      <div class="nav-tabs">
+        <div class="nav-item active" onclick="switchView('menu', this)">
+          <i class="fas fa-utensils"></i> Menu đặt món
+        </div>
+        <div class="nav-item" onclick="switchView('orders', this)">
+          <i class="fas fa-receipt"></i> Đơn hàng của tôi
+        </div>
+      </div>
+
+      <div id="menu-view" class="view-section active">
+        
+        <form action="HomeServlet" method="GET" class="search-box">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            name="keyword" 
+            placeholder="Tìm kiếm món ăn và nhấn Enter..." 
+            value="<%= searchKeyword %>"
+          />
+        </form>
+
+        <div class="categories">
+          <div class="cat-chip active" onclick="filterFood('Tất cả', this)">Tất cả</div>
+          <div class="cat-chip" onclick="filterFood('Pizza', this)">Pizza</div>
+          <div class="cat-chip" onclick="filterFood('Burger', this)">Burger</div>
+          <div class="cat-chip" onclick="filterFood('Nhật Bản', this)">Nhật Bản</div>
+          <div class="cat-chip" onclick="filterFood('Pasta', this)">Pasta</div>
+          <div class="cat-chip" onclick="filterFood('Salad', this)">Salad</div>
+          <div class="cat-chip" onclick="filterFood('Tráng Miệng', this)">Tráng Miệng</div>
+          <div class="cat-chip" onclick="filterFood('Việt Nam', this)">Việt Nam</div>
+          <div class="cat-chip" onclick="filterFood('Gà', this)">Gà</div>
+        </div>
+
+        <div class="banner">
+          <h2>Ưu đãi hôm nay!</h2>
+          <p>Giảm 30% cho đơn hàng từ 200.000đ. Mã: FOOD30</p>
+        </div>
+
+        <div class="food-grid" id="foodGrid"></div>
+      </div>
+
+      <div id="orders-view" class="view-section">
+        <div class="page-header">
+          <h2 style="color: #d95c00">
+            <i class="fas fa-file-invoice-dollar"></i> Đơn hàng của tôi
+          </h2>
+          <p style="margin-left: 32px; color: #777">
+            Lịch sử và trạng thái đơn hàng
+          </p>
+        </div>
+        <div class="empty-state">
+          <i class="fas fa-receipt empty-icon"></i>
+          <div style="font-size: 16px; color: #555">Tính năng đang phát triển</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="fab-cart" onclick="toggleCart()">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+
+    <div class="cart-overlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar">
+      <div class="cart-header">
+        <h3>Giỏ hàng <span id="cartTotalItems">(0)</span></h3>
+        <span onclick="toggleCart()" style="cursor: pointer; font-size: 20px">&times;</span>
+      </div>
+      <div class="cart-items" id="cartItemsContainer">
+        <p style="text-align: center; color: #999; margin-top: 20px">
+          Giỏ hàng trống
+        </p>
+      </div>
+      
+      <div class="cart-footer">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold;">
+          <span>Tổng cộng:</span>
+          <span id="cartTotalPrice">0đ</span>
+        </div>
+        
+        <form action="OrderServlet" method="GET" id="checkoutForm">
+            <input type="hidden" name="cartData" id="hiddenCartData" />
+            
+            <button type="button" class="btn-checkout" onclick="handleCheckout()">
+                Đặt món ngay
+            </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // 1. DỮ LIỆU MÓN ĂN (Được render từ Server Java xuống Javascript)
+      const foods = [
+      <% 
+         if(foodListFromDB != null) {
+            // DUYỆT LIST TỪ JAVA ĐỂ TẠO MẢNG JS
+            /* BẠN CẦN MỞ COMMENT ĐOẠN NÀY KHI ĐÃ CÓ MODEL JAVA:
+               
+               for(Object obj : foodListFromDB) {
+                   Food f = (Food) obj; // Ép kiểu về object Food của bạn
+            */
+            %>
+                /*
+                {
+                    id: <%= 1 %>, // Thay bằng f.getId()
+                    name: "<%= "Tên món Demo" %>", // Thay bằng f.getName()
+                    price: <%= 100000 %>, // Thay bằng f.getPrice()
+                    img: "<%= "link_anh.jpg" %>", // Thay bằng f.getImage()
+                    cat: "<%= "Pizza" %>" // Thay bằng f.getCategory()
+                },
+                */
+            <% 
+               /* } End for loop */
+         } else {
+             // DỮ LIỆU GIẢ LẬP (FALLBACK) ĐỂ TEST GIAO DIỆN KHI CHƯA CÓ DB
+      %>
+        { id: 1, name: "Pizza Hải Sản Đặc Biệt", price: 189000, img: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500", cat: "Pizza" },
+        { id: 2, name: "Burger Bò Phô Mai", price: 95000, img: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500", cat: "Burger" },
+        { id: 3, name: "Combo Sushi Cao Cấp", price: 259000, img: "https://images.unsplash.com/photo-1579871494447-9811cf80d66c?w=500", cat: "Nhật Bản" },
+        { id: 4, name: "Mì Ý Sốt Bò Bằm", price: 75000, img: "https://images.unsplash.com/photo-1563379926898-05f4575a45d8?w=500", cat: "Pasta" },
+        { id: 5, name: "Salad Rau Củ Tươi", price: 65000, img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500", cat: "Salad" },
+        { id: 6, name: "Bánh Kem Dâu Tây", price: 85000, img: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=500", cat: "Tráng Miệng" },
+        { id: 7, name: "Gà Rán Giòn Tan", price: 99000, img: "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500", cat: "Gà" },
+        { id: 8, name: "Phở Bò Đặc Biệt", price: 65000, img: "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?w=500", cat: "Việt Nam" },
+      <% } %>
+      ];
+
+      let cart = [];
+
+      // 2. HÀM RENDER (Giữ nguyên logic cũ)
+      function renderFood(filterCategory = "Tất cả") {
+        const grid = document.getElementById("foodGrid");
+        grid.innerHTML = "";
+
+        const filteredList =
+          filterCategory === "Tất cả"
+            ? foods
+            : foods.filter((item) => item.cat === filterCategory);
+
+        if (filteredList.length === 0) {
+          grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #777; padding: 40px;">Không tìm thấy món nào thuộc mục "${filterCategory}"</div>`;
+          return;
+        }
+
+        grid.innerHTML = filteredList
+          .map(
+            (food) => `
+                <div class="food-card">
+                    <img src="${food.img}" class="card-img-top">
+                    <div class="card-body">
+                        <div style="font-weight:bold; margin-bottom:5px;">${food.name}</div>
+                        <div style="font-size:12px; color:#999; margin-bottom:10px;">${food.cat}</div> <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span class="price">${food.price.toLocaleString()}đ</span>
+                            <button class="btn-add" onclick="addToCart(${food.id})">+ Thêm</button>
+                        </div>
+                    </div>
+                </div>
+            `,
+          )
+          .join("");
+      }
+
+      function filterFood(categoryName, clickedElement) {
+        document.querySelectorAll(".cat-chip").forEach((chip) => chip.classList.remove("active"));
+        clickedElement.classList.add("active");
+        renderFood(categoryName);
+      }
+
+      function toggleCart() {
+        document.body.classList.toggle("cart-open");
+      }
+
+      function addToCart(id) {
+        const food = foods.find((f) => f.id === id);
+        const existingItem = cart.find((item) => item.id === id);
+        if (existingItem) existingItem.qty++;
+        else cart.push({ ...food, qty: 1 });
+        updateCartUI();
+
+        const fab = document.querySelector(".fab-cart");
+        fab.style.transform = "scale(1.2)";
+        setTimeout(() => (fab.style.transform = "scale(1)"), 200);
+      }
+
+      function updateCartUI() {
+        const container = document.getElementById("cartItemsContainer");
+        const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+        const totalPrice = cart.reduce(
+          (sum, item) => sum + item.price * item.qty,
+          0,
+        );
+
+        document.getElementById("cartCount").innerText = totalQty;
+        document.getElementById("cartTotalItems").innerText = `(${totalQty})`;
+        document.getElementById("cartTotalPrice").innerText =
+          totalPrice.toLocaleString() + "đ";
+
+        if (cart.length === 0) {
+          container.innerHTML =
+            '<p style="text-align:center; color:#999; margin-top:20px;">Giỏ hàng trống</p>';
+        } else {
+          container.innerHTML = cart
+            .map(
+              (item) => `
+                    <div class="cart-item">
+                        <div>
+                            <div style="font-weight:bold; font-size:14px;">${item.name}</div>
+                            <div style="font-size:12px; color:#777;">${item.price.toLocaleString()}đ x ${item.qty}</div>
+                        </div>
+                        <div style="font-weight:bold; color:var(--primary);">${(item.price * item.qty).toLocaleString()}đ</div>
+                    </div>
+                `,
+            )
+            .join("");
+        }
+      }
+
+      // 3. XỬ LÝ CHECKOUT GỬI VỀ SERVLET (Action form)
+      function handleCheckout() {
+        if (cart.length === 0) {
+            alert("Giỏ hàng đang trống!");
+            return;
+        }
+
+        if(confirm("Xác nhận đặt món?")) {
+            // Chuyển mảng Cart thành chuỗi JSON
+            const cartJson = JSON.stringify(cart);
+            
+            // Gán vào input ẩn
+            document.getElementById("hiddenCartData").value = cartJson;
+            
+            // Submit form
+            document.getElementById("checkoutForm").submit();
+        }
+      }
+
+      function switchView(viewName, clickedTab) {
+        document.querySelectorAll(".view-section").forEach((el) => el.classList.remove("active"));
+        document.querySelectorAll(".nav-item").forEach((el) => el.classList.remove("active"));
+        document.getElementById(viewName + "-view").classList.add("active");
+        clickedTab.classList.add("active");
+      }
+
+      // CHẠY LẦN ĐẦU
+      renderFood("Tất cả");
+    </script>
+  </body>
+</html>
