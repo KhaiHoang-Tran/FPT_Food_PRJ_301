@@ -1,0 +1,23 @@
+Project PRJ_301: FPT_Food
+Giao diện:
+Home.jsp
+Login.jsp
+Dashboard.jsp (Admin)
+Giỏ hàng
+Trang hóa đơn (User)
+Trang nhận order 
+=========================
+Người dùng:
+Bàn đặt món (1 người đại diên / 1 bàn) Đổi điểm khuyến mãi, Đăng nhập, Đăng xuất, gọi món, xóa món Khải
+Quản lý (manager): chỉnh số lượng, chỉnh status bàn, tính hóa đơn(tính sau) Thắng
+Bếp (worker) thay đổi status món + login + logout Ân 
+=========================
+Mô tả: Tạo tài khoảng or không -> Đăng nhập (Không bắt buộc) ->
+     Bàn sẽ đặt món và số lượng -> Quản lý xem và chỉnh sữa -> Bếp làm xong thì chuyển đơn hàng thành đã làm -> xuất ra hóa đơn 
+=========================
+Database: 
+User: UserID(khóa chính), username, password, status 
+Table: TableID(Khóa chính), Nhân viên ID(Khóa phụ), status, số lượng ghế
+Nhân viên: Nhân viên ID(Khóa chính), Fullname, SDT
+Orders: Orders ID(Khóa chính), TableID(khóa phụ), FoodID(khóa phụ), totalPrice
+Food: FoodID(khóa chính), name, giá, loại
