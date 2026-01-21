@@ -12,7 +12,7 @@
         <title>JSP Page</title>
     </head>
     <body>
-        <form action="MainController">
+        <form action="MainController" method="post">
             <table border="0">
                 <tbody>
                     <tr>
