@@ -1,0 +1,6 @@
+CREATE DATABASE PRJ_FPT_FOOD;
+GO
+
+USE master;
+GO
+
