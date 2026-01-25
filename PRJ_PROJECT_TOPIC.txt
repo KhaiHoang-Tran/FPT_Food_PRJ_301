@@ -1,0 +1,135 @@
+Project PRJ_301: FPT_Food
+Giao diện:
+Home.jsp
+Login.jsp
+Dashboard.jsp (Admin)
+Giỏ hàng
+Trang hóa đơn (User)
+Trang nhận order 
+=========================
+Người dùng:
+KHẢI – USER / BÀN ĐẶT MÓN
+Trang JSP: Login.jsp, Home.jsp
+
+Table phụ trách (4 table)
+User
+DiningTable
+Orders
+OrderItem
+
+Chức năng CRUD
+User
+Read: Đăng nhập
+Delete: Logout (xoá session)
+
+DiningTable
+Read: Xem thông tin bàn
+Update: Bàn chuyển empty → busy
+
+Orders
+Create: Tạo đơn hàng khi bấm “Đặt món”
+Read: Xem đơn của bàn
+Update: Cập nhật totalPrice
+Delete: Hủy đơn (nếu chưa gửi bếp)
+
+OrderItem
+Create: Thêm món
+Read: Xem giỏ hàng
+Update: Đổi số lượng
+Delete: Xóa món
+
+THẮNG – MANAGER / DASHBOARD
+Trang JSP: Dashboard.jsp
+
+Table phụ trách (4 table)
+DiningTable
+Orders
+OrderItem
+Food
+
+Chức năng CRUD
+DiningTable
+Read: Xem danh sách bàn
+Update: Chỉnh status bàn
+
+Orders
+Read: Xem đơn theo bàn
+Update: Chuyển trạng thái
+Delete: Hủy đơn lỗi
+
+OrderItem
+Read: Xem chi tiết món
+Update: Chỉnh số lượng
+
+Food
+Create: Thêm món
+Read: Xem menu
+Update: Sửa giá
+Delete: Xóa món
+
+ÂN – WORKER / BẾP
+Trang JSP: Kitchen.jsp
+
+Table phụ trách (4 table)
+User
+Orders
+OrderItem
+Food
+
+Chức năng CRUD
+User
+Create: Đăng ký (tuỳ chọn)
+Read: Đăng nhập
+Update: Cập nhật trạng thái login
+Delete: Logout (xoá session)
+
+Orders
+Read: Xem đơn cần làm
+Update: pending → cooking → done
+
+OrderItem
+Read: Xem món + số lượng
+
+Food
+Read: Xem món đang bán
+Update: Đánh dấu hết món
+=========================
+Mô tả: Tạo tài khoảng or không -> Đăng nhập (Không bắt buộc) ->
+     Bàn sẽ đặt món và số lượng -> Quản lý xem và chỉnh sữa -> Bếp làm xong thì chuyển đơn hàng thành đã làm -> xuất ra hóa đơn 
+=========================
+Database: 
+User
+- userID (PK)
+- username
+- password
+- role        -- user | manager | worker
+- fullname
+- phone
+- status      -- active / inactive
+
+DiningTable
+- tableID (PK)
+- tableName
+- seatCount
+- status      -- empty | busy | booked
+
+Food
+- foodID (PK)
+- name
+- price
+- category
+- status      -- available | unavailable
+
+Orders
+- orderID (PK)
+- tableID (FK)
+- status      -- pending | cooking | done
+- totalPrice
+- createdTime
+
+OrderItem
+- orderItemID (PK)
+- orderID (FK)
+- foodID (FK)
+- quantity
+- price
