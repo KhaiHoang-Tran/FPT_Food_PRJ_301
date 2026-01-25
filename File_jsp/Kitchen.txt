@@ -1,258 +1,208 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.ArrayList" %>
-<%
-    // --- 1. KIỂM TRA SESSION (BẢO MẬT) ---
-    Object userRole = session.getAttribute("USER_ROLE");
-    Object userName = session.getAttribute("USER_NAME");
 
-    if (userName == null) {
-        // Chưa đăng nhập -> Đá về trang Login
-        response.sendRedirect("Login.html");
-        return;
+<%! 
+    // --- KHAI BÁO CLASS GIẢ LẬP (MOCK DATA) ĐỂ BẠN CHẠY THỬ ĐƯỢC NGAY ---
+    // Trong thực tế, bạn sẽ import class Order/Item từ model của bạn
+    public static class Item {
+        public String name;
+        public int qty;
+        public Item(String n, int q) { name = n; qty = q; }
     }
+
+    public static class Order {
+        public int id;
+        public String tableName;
+        public String time;
+        public String status; // pending, cooking, done
+        public List<Item> items = new ArrayList<>();
+        
+        public Order(int id, String t, String time, String st) {
+            this.id = id; this.tableName = t; this.time = time; this.status = st;
+        }
+    }
+%>
+
+<%
+    // --- 1. KIỂM TRA SESSION ---
+    Object userRole = session.getAttribute("USER_ROLE");
+    // if (userRole == null) response.sendRedirect("login.jsp"); // Uncomment khi chạy thật
+
+    // --- 2. LẤY DỮ LIỆU TỪ SERVLET HOẶC DB ---
+    // Giả sử Servlet đã setAttribute("ORDER_LIST", list)
+    // List<Order> allOrders = (List<Order>) request.getAttribute("ORDER_LIST");
     
-    // --- 2. LẤY DỮ LIỆU TỪ SERVLET ---
-    // KitchenServlet sẽ query DB lấy toàn bộ đơn hàng và gửi sang đây
-    List<?> orderList = (List<?>) request.getAttribute("ORDER_LIST");
+    // TẠO DỮ LIỆU GIẢ ĐỂ TEST (Xóa đoạn này khi đấu nối DB thật)
+    List<Order> allOrders = new ArrayList<>();
+    Order o1 = new Order(101, "Bàn 5", "12:30", "pending");
+    o1.items.add(new Item("Pizza Hải Sản", 1));
+    o1.items.add(new Item("Pepsi", 2));
     
-    // Xử lý null (tránh lỗi khi chưa có backend)
-    if (orderList == null) orderList = new ArrayList<>();
+    Order o2 = new Order(102, "Bàn 2", "12:35", "cooking");
+    o2.items.add(new Item("Mì Ý Bò", 1));
+    
+    allOrders.add(o1);
+    allOrders.add(o2);
+    // -----------------------------------------------------------
+
+    // --- 3. XỬ LÝ LOGIC TAB (FILTER) ---
+    String currentTab = request.getParameter("tab");
+    if (currentTab == null) currentTab = "pending"; // Mặc định vào là tab Chờ xử lý
+
+    List<Order> displayList = new ArrayList<>();
+    int countPending = 0;
+    int countCooking = 0;
+
+    // Vòng lặp đếm số lượng và lọc danh sách hiển thị
+    for (Order o : allOrders) {
+        if ("pending".equals(o.status)) countPending++;
+        if ("cooking".equals(o.status)) countCooking++;
+
+        if ("all".equals(currentTab)) {
+            displayList.add(o);
+        } else if (currentTab.equals(o.status)) {
+            displayList.add(o);
+        }
+    }
 %>
 
 <!doctype html>
 <html lang="vi">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>FPT Food - Bếp</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <style>
-      /* --- CSS --- */
-      :root { --primary: #ff6600; --bg-page: #f5f7fa; --text-dark: #333; --text-gray: #777; --border-radius: 8px; --shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
-      * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
-      body { background-color: var(--bg-page); color: var(--text-dark); }
-      .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-      header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 30px; box-shadow: var(--shadow); margin-bottom: 30px; }
-      .brand h1 { color: var(--primary); font-size: 22px; font-weight: 700; } .brand p { font-size: 13px; color: var(--text-gray); }
-      .btn-logout { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; text-decoration: none; color: inherit; }
-      .page-title { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; } .title-icon { font-size: 28px; color: var(--primary); } .title-text h2 { font-size: 20px; } .title-text p { font-size: 13px; color: var(--text-gray); }
-      .tabs-container { background: #e9ecef; border-radius: 30px; padding: 5px; display: flex; margin-bottom: 30px; }
-      .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; border-radius: 25px; cursor: pointer; font-weight: 600; color: #666; transition: 0.3s; }
-      .tab-btn.active { background: white; color: var(--text-dark); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
-      .content-area { background: white; border-radius: var(--border-radius); min-height: 400px; padding: 20px; box-shadow: var(--shadow); position: relative; }
-      .empty-state { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #999; }
-      .empty-icon { font-size: 60px; margin-bottom: 15px; color: #ddd; } .empty-text { font-size: 16px; margin-bottom: 5px; color: #777; } .empty-sub { font-size: 13px; }
-      .order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
-      .order-card { border: 1px solid #eee; border-radius: var(--border-radius); padding: 20px; background: #fff; border-left: 5px solid var(--primary); animation: slideIn 0.3s ease; }
-      @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-      .order-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #f5f5f5; padding-bottom: 10px; }
-      .table-name { font-weight: bold; font-size: 16px; } .time { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; }
-      .order-items { margin-bottom: 15px; } .item-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; } .item-qty { font-weight: bold; color: var(--primary); margin-right: 10px; }
-      .btn-action { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; background: #28a745; }
-      .btn-action:hover { background: #218838; }
+        /* GIỮ NGUYÊN CSS CŨ CỦA BẠN */
+        :root { --primary: #ff6600; --bg-page: #f5f7fa; --text-dark: #333; --text-gray: #777; --border-radius: 8px; --shadow: 0 2px 10px rgba(0, 0, 0, 0.05); }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Segoe UI", sans-serif; }
+        body { background-color: var(--bg-page); color: var(--text-dark); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        header { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px 30px; box-shadow: var(--shadow); margin-bottom: 30px; }
+        .brand h1 { color: var(--primary); font-size: 22px; font-weight: 700; }
+        .brand p { font-size: 13px; color: var(--text-gray); }
+        .btn-logout { padding: 8px 15px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; text-decoration: none; color: inherit; }
+        .page-title { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .title-icon { font-size: 28px; color: var(--primary); }
+        .tabs-container { background: #e9ecef; border-radius: 30px; padding: 5px; display: flex; margin-bottom: 30px; }
+        
+        /* Sửa lại Tab button thành thẻ a để link hoạt động tốt */
+        .tab-btn { flex: 1; padding: 10px; text-align: center; text-decoration: none; border-radius: 25px; font-weight: 600; color: #666; transition: 0.3s; display: block;}
+        .tab-btn.active { background: white; color: var(--text-dark); box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); }
+        
+        .content-area { background: white; border-radius: var(--border-radius); min-height: 400px; padding: 20px; box-shadow: var(--shadow); position: relative; }
+        .order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .order-card { border: 1px solid #eee; border-radius: var(--border-radius); padding: 20px; background: #fff; border-left: 5px solid var(--primary); }
+        .order-header { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #f5f5f5; padding-bottom: 10px; }
+        .table-name { font-weight: bold; font-size: 16px; }
+        .time { font-size: 12px; color: #888; display: flex; align-items: center; gap: 5px; }
+        .order-items { margin-bottom: 15px; }
+        .item-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
+        .item-qty { font-weight: bold; color: var(--primary); margin-right: 10px; }
+        
+        /* Style cho Form Button */
+        .btn-action { width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; background: #28a745; transition: 0.2s;}
+        .btn-action:hover { opacity: 0.9; }
+        .btn-pending { background: #ff6600; } /* Màu cam cho nút Nhận đơn */
+        .btn-cooking { background: #28a745; } /* Màu xanh cho nút Hoàn thành */
+        
+        .empty-state { text-align: center; padding-top: 50px; color: #999; }
+        .empty-icon { font-size: 60px; margin-bottom: 15px; color: #ddd; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+
     <header>
-      <div class="brand">
-        <h1>FPT Food - Bếp</h1>
-        <p>Xin chào, <b><%= userName.toString() %></b></p>
-      </div>
-      <a href="LogoutServlet" class="btn-logout">
-        <i class="fas fa-sign-out-alt"></i> Đăng xuất
-      </a>
+        <div class="brand">
+            <h1>FPT Food - Bếp</h1>
+            <p>Xin chào, <b><%= session.getAttribute("USER_NAME") != null ? session.getAttribute("USER_NAME") : "Admin" %></b></p>
+        </div>
+        <a href="LogoutServlet" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
     </header>
 
     <div class="container">
-      <div class="page-title">
-        <i class="fas fa-bell title-icon"></i>
-        <div class="title-text">
-          <h2>Nhận đơn hàng</h2>
-          <p>Quản lý và xử lý đơn hàng từ khách</p>
+        <div class="page-title">
+            <i class="fas fa-bell title-icon"></i>
+            <div class="title-text">
+                <h2>Nhận đơn hàng</h2>
+                <p>Quản lý và xử lý đơn hàng từ khách</p>
+            </div>
         </div>
-      </div>
 
-      <div class="tabs-container">
-        <button class="tab-btn active" onclick="filterOrders('pending', this)">
-          Chờ xử lý (<span id="count-pending">0</span>)
-        </button>
-        <button class="tab-btn" onclick="filterOrders('cooking', this)">
-          Đang chuẩn bị (<span id="count-cooking">0</span>)
-        </button>
-        <button class="tab-btn" onclick="filterOrders('all', this)">
-          Tất cả (<span id="count-all">0</span>)
-        </button>
-      </div>
-
-      <div class="content-area">
-        <div id="orderGrid" class="order-grid"></div>
-
-        <div id="emptyState" class="empty-state">
-          <i class="fas fa-utensils empty-icon"></i>
-          <div class="empty-text">Không có đơn hàng nào</div>
-          <div class="empty-sub" id="emptySubText">Không có đơn hàng mới</div>
+        <div class="tabs-container">
+            <a href="?tab=pending" class="tab-btn <%= "pending".equals(currentTab) ? "active" : "" %>">
+                Chờ xử lý (<%= countPending %>)
+            </a>
+            <a href="?tab=cooking" class="tab-btn <%= "cooking".equals(currentTab) ? "active" : "" %>">
+                Đang chuẩn bị (<%= countCooking %>)
+            </a>
+            <a href="?tab=all" class="tab-btn <%= "all".equals(currentTab) ? "active" : "" %>">
+                Tất cả (<%= allOrders.size() %>)
+            </a>
         </div>
-      </div>
-    </div>
 
-    <script>
-      // 1. DỮ LIỆU TỪ SERVER (Java render ra Javascript Array)
-      const orders = [
-      <% 
-        if(orderList != null && !orderList.isEmpty()) {
-            /* // BẠN SẼ MỞ COMMENT NÀY KHI CÓ CLASS ORDER CỦA BẠN
-               for(Order o : orderList) {
-            */
-      %>
-            /*
-            {
-                id: <%= 1 %>, // o.getId()
-                tableName: "<%= "Bàn 1" %>", // o.getTableName()
-                time: "<%= "10:30" %>", // o.getTime()
-                status: "<%= "pending" %>", // o.getStatus(): "pending", "cooking", "done"
-                items: [
-                    // Loop items
-                    { name: "Phở Bò", qty: 2 }, 
-                    { name: "Trà Đá", qty: 1 }
-                ]
-            },
-            */
-      <% 
-            /* } */
-        } else {
-            // --- DỮ LIỆU MOCK ĐỂ TEST GIAO DIỆN (Khi chưa có DB) ---
-      %>
-            {
-                id: 101,
-                tableName: "Bàn 5",
-                time: "12:30",
-                status: "pending",
-                items: [
-                    { name: "Pizza Hải Sản", qty: 1 },
-                    { name: "Pepsi", qty: 2 }
-                ]
-            },
-            {
-                id: 102,
-                tableName: "Bàn 2",
-                time: "12:35",
-                status: "cooking",
-                items: [
-                    { name: "Mì Ý Bò", qty: 1 }
-                ]
-            },
-      <% } %>
-      ];
+        <div class="content-area">
+            
+            <%-- KIỂM TRA NẾU LIST RỖNG --%>
+            <% if (displayList.isEmpty()) { %>
+                <div class="empty-state">
+                    <i class="fas fa-utensils empty-icon"></i>
+                    <div class="empty-text">Không có đơn hàng nào</div>
+                    <div class="empty-sub">
+                        <%= "pending".equals(currentTab) ? "Hiện không có đơn mới" : "Danh sách trống" %>
+                    </div>
+                </div>
+            <% } else { %>
 
-      // Biến lưu tab hiện tại
-      var currentTab = "pending";
+                <div class="order-grid">
+                    <%-- VÒNG LẶP JAVA DUYỆT QUA LIST --%>
+                    <% for (Order order : displayList) { %>
+                        
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div class="table-name"><%= order.tableName %></div>
+                                <div class="time"><i class="far fa-clock"></i> <%= order.time %></div>
+                            </div>
 
-      // 2. Hàm Render
-      function renderOrders() {
-        var grid = document.getElementById("orderGrid");
-        var emptyState = document.getElementById("emptyState");
+                            <div class="order-items">
+                                <% for (Item item : order.items) { %>
+                                    <div class="item-row">
+                                        <span>
+                                            <span class="item-qty">x<%= item.qty %></span> 
+                                            <%= item.name %>
+                                        </span>
+                                    </div>
+                                <% } %>
+                            </div>
 
-        // Lọc đơn hàng theo Tab
-        var filteredOrders = orders;
-        if (currentTab === "pending") {
-          filteredOrders = orders.filter(function(o) { return o.status === "pending"; });
-          document.getElementById("emptySubText").innerText = "Không có đơn hàng mới";
-        } else if (currentTab === "cooking") {
-          filteredOrders = orders.filter(function(o) { return o.status === "cooking"; });
-          document.getElementById("emptySubText").innerText = "Không có đơn đang chuẩn bị";
-        } else {
-             document.getElementById("emptySubText").innerText = "Danh sách trống";
-        }
-
-        updateCounts();
-
-        if (filteredOrders.length === 0) {
-          grid.innerHTML = "";
-          emptyState.style.display = "block";
-        } else {
-          emptyState.style.display = "none";
-          // Render HTML
-          var html = "";
-          filteredOrders.forEach(function(order) {
-              var itemsHtml = "";
-              order.items.forEach(function(item) {
-                  itemsHtml += '<div class="item-row"><span><span class="item-qty">x' + item.qty + '</span> ' + item.name + '</span></div>';
-              });
-
-              html += '<div class="order-card">' +
-                        '<div class="order-header">' +
-                            '<div class="table-name">' + order.tableName + '</div>' +
-                            '<div class="time"><i class="far fa-clock"></i> ' + order.time + '</div>' +
-                        '</div>' +
-                        '<div class="order-items">' + itemsHtml + '</div>' +
-                        renderActionForm(order) +
-                    '</div>';
-          });
-          grid.innerHTML = html;
-        }
-      }
-
-      // 3. HÀM SINH FORM (Đã sửa lỗi let -> var)
-      function renderActionForm(order) {
-        var actionUrl = "UpdateOrderServlet"; 
-        var btnText = "";
-        var nextStatus = "";
-        var btnColor = "";
-
-        if (order.status === "pending") {
-            btnText = "Nhận đơn & Nấu";
-            nextStatus = "cooking";
-            btnColor = "#ff6600";
-        } else if (order.status === "cooking") {
-            btnText = "Hoàn thành";
-            nextStatus = "done";
-            btnColor = "#28a745";
-        } else {
-            return '<div style="text-align:center; color:green; font-weight:bold;"><i class="fas fa-check"></i> Đã xong</div>';
-        }
-
-        // Trả về HTML Form
-        return '<form action="' + actionUrl + '" method="GET">' +
-                '<input type="hidden" name="orderId" value="' + order.id + '">' +
-                '<input type="hidden" name="status" value="' + nextStatus + '">' +
-                '<button type="submit" class="btn-action" style="background:' + btnColor + '">' +
-                    btnText +
-                '</button>' +
-            '</form>';
-      }
-
-      function filterOrders(status, btnElement) {
-        currentTab = status;
-        var btns = document.querySelectorAll(".tab-btn");
-        for (var i = 0; i < btns.length; i++) {
-            btns[i].classList.remove("active");
-        }
-        btnElement.classList.add("active");
-        renderOrders();
-      }
-
-      function updateCounts() {
-        var pending = 0;
-        var cooking = 0;
-        
-        for(var i=0; i<orders.length; i++) {
-            if(orders[i].status === 'pending') pending++;
-            if(orders[i].status === 'cooking') cooking++;
-        }
-        
-        var all = orders.length;
-
-        document.getElementById("count-pending").innerText = pending;
-        document.getElementById("count-cooking").innerText = cooking;
-        document.getElementById("count-all").innerText = all;
-      }
-
-      // Khởi chạy
-      renderOrders();
-    </script>
-  </body>
+                            <form action="UpdateOrderServlet" method="GET">
+                                <input type="hidden" name="orderId" value="<%= order.id %>">
+                                
+                                <%-- Logic hiển thị nút bấm dựa trên trạng thái --%>
+                                <% if ("pending".equals(order.status)) { %>
+                                    <input type="hidden" name="status" value="cooking">
+                                    <button type="submit" class="btn-action btn-pending">
+                                        Nhận đơn & Nấu
+                                    </button>
+                                <% } else if ("cooking".equals(order.status)) { %>
+                                    <input type="hidden" name="status" value="done">
+                                    <button type="submit" class="btn-action btn-cooking">
+                                        Hoàn thành
+                                    </button>
+                                <% } else { %>
+                                    <div style="text-align:center; color:green; font-weight:bold;">
+                                        <i class="fas fa-check"></i> Đã xong
+                                    </div>
+                                <% } %>
+                            </form>
+                        </div>
+                        
+                    <% } // Kết thúc vòng lặp orders %>
+                </div>
+            <% } // Kết thúc if/else rỗng %>
+        </div>
+    </div> 
+    </body>
 </html>
