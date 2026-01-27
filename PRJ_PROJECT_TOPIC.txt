@@ -5,8 +5,9 @@ Khách đặt món -> Bếp nấu & Trừ kho -> Quản lý thanh toán & Nhập
 Tổng số bảng Database: 10 Bảng.
 
 2. PHÂN CÔNG CHI TIẾT (ROLE & RESPONSIBILITY)
+
 KHẢI – VAI TRÒ: USER (KHÁCH HÀNG)
-Giao diện phụ trách: Home.jsp, Login.jsp, Cart.jsp, Bill.jsp
+Giao diện phụ trách: Home.jsp, Login.jsp
 Các bảng phụ trách (6): User, DiningTable, Orders, OrderItem, Voucher, Review.
 
 Chức năng CRUD chi tiết:
