@@ -1,135 +1,101 @@
-Project PRJ_301: FPT_Food
-Giao diện:
-Home.jsp
-Login.jsp
-Dashboard.jsp (Admin)
-Giỏ hàng
-Trang hóa đơn (User)
-Trang nhận order 
-=========================
-Người dùng:
-KHẢI – USER / BÀN ĐẶT MÓN
-Trang JSP: Login.jsp, Home.jsp
+PROJECT PRJ301: FPT_FOOD (FINAL VERSION)
+1. TỔNG QUAN HỆ THỐNG
+Mục tiêu: Xây dựng hệ thống quản lý nhà hàng với quy trình khép kín: 
+Khách đặt món -> Bếp nấu & Trừ kho -> Quản lý thanh toán & Nhập kho.
+Tổng số bảng Database: 10 Bảng.
 
-Table phụ trách (4 table)
-User
-DiningTable
-Orders
-OrderItem
+2. PHÂN CÔNG CHI TIẾT (ROLE & RESPONSIBILITY)
+KHẢI – VAI TRÒ: USER (KHÁCH HÀNG)
+Giao diện phụ trách: Home.jsp, Login.jsp, Cart.jsp, Bill.jsp
+Các bảng phụ trách (6): User, DiningTable, Orders, OrderItem, Voucher, Review.
 
-Chức năng CRUD
-User
-Read: Đăng nhập
-Delete: Logout (xoá session)
+Chức năng CRUD chi tiết:
+User:
+Create: Đăng ký tài khoản mới.
+Read: Đăng nhập hệ thống.
+Update: Cập nhật thông tin cá nhân (Profile).
+Delete: Đăng xuất (Hủy session).
 
-DiningTable
-Read: Xem thông tin bàn
-Update: Bàn chuyển empty → busy
+DiningTable:
+Read: Xem danh sách bàn & trạng thái (Trống/Đang dùng).
+Logic: Chọn bàn -> Backend tự động chuyển trạng thái empty -> busy.
+Orders & OrderItem (Giỏ hàng):
+Create: Thêm món vào giỏ, tạo đơn hàng (Orders status = 'pending').
+Read: Xem lịch sử đơn hàng, xem chi tiết món trong giỏ.
+Update: Chỉnh sửa số lượng món trong giỏ.
+Delete: Xóa món khỏi giỏ, Hủy đơn hàng (chỉ khi Bếp chưa nhận đơn).
 
-Orders
-Create: Tạo đơn hàng khi bấm “Đặt món”
-Read: Xem đơn của bàn
-Update: Cập nhật totalPrice
-Delete: Hủy đơn (nếu chưa gửi bếp)
+Voucher:
+Read: Kiểm tra mã giảm giá hợp lệ.
+Logic: Nhập code tại giỏ hàng -> Backend check DB -> Giảm totalPrice.
 
-OrderItem
-Create: Thêm món
-Read: Xem giỏ hàng
-Update: Đổi số lượng
-Delete: Xóa món
+Review:
+Create: Viết đánh giá cho món ăn (Chỉ User đã đăng nhập).
+Read: Xem đánh giá của người khác tại Popup chi tiết món ăn.
 
-THẮNG – MANAGER / DASHBOARD
-Trang JSP: Dashboard.jsp
+THẮNG – VAI TRÒ: MANAGER (QUẢN TRỊ VIÊN)
+Giao diện phụ trách: Dashboard.jsp
+Các bảng phụ trách (6): User (Staff), DiningTable, Orders, Food, Ingredient, Category (Mới).
 
-Table phụ trách (4 table)
-DiningTable
-Orders
-OrderItem
-Food
+Chức năng CRUD chi tiết:
 
-Chức năng CRUD
-DiningTable
-Read: Xem danh sách bàn
-Update: Chỉnh status bàn
+DiningTable & Orders (Quy trình thanh toán):
+Read: Xem sơ đồ bàn, xem chi tiết hóa đơn của từng bàn.
+Update (Thanh toán): Bấm "Thanh toán" -> Set Orders status = 'Paid' -> Tự động chuyển DiningTable về 'Empty'.
+Delete: Hủy các đơn hàng bị lỗi hoặc khách bỏ về.
 
-Orders
-Read: Xem đơn theo bàn
-Update: Chuyển trạng thái
-Delete: Hủy đơn lỗi
+Food & Category (Quản lý Menu):
+Create: Thêm món mới, Thêm danh mục mới (Category).
+Read: Xem danh sách món ăn.
+Update: Sửa giá món, Sửa tên danh mục.
+Delete: Ẩn món ăn (Soft delete) hoặc xóa danh mục.
 
-OrderItem
-Read: Xem chi tiết món
-Update: Chỉnh số lượng
+Ingredient (Quản lý Kho):
+Read: Xem danh sách nguyên liệu, Cảnh báo màu đỏ nếu quantity < minThreshold.
+Update (Nhập kho): Nhập thêm hàng -> Tăng quantityInStock.
 
-Food
-Create: Thêm món
-Read: Xem menu
-Update: Sửa giá
-Delete: Xóa món
+ÂN – VAI TRÒ: KITCHEN (NHÂN VIÊN BẾP)
+Giao diện phụ trách: Kitchen.jsp
+Các bảng phụ trách (5): Orders, OrderItem, Food, Ingredient, Recipe.
 
-ÂN – WORKER / BẾP
-Trang JSP: Kitchen.jsp
+Chức năng CRUD chi tiết:
 
-Table phụ trách (4 table)
-User
-Orders
-OrderItem
-Food
+Orders (Quy trình nấu):
+Read: Xem danh sách các đơn hàng mới (pending).
+Update: Chuyển trạng thái: pending (Nhận đơn) -> cooking (Đang nấu) -> done (Xong món).
 
-Chức năng CRUD
-User
-Create: Đăng ký (tuỳ chọn)
-Read: Đăng nhập
-Update: Cập nhật trạng thái login
-Delete: Logout (xoá session)
+Recipe (Quản lý Công thức - CRUD chính của Bếp):
+Create: Định nghĩa công thức mới (VD: 1 Pizza = 200g Bột + 100g Phô mai).
+Read: Xem công thức của từng món.
+Update: Điều chỉnh định lượng nguyên liệu (VD: Giảm đường, tăng muối).
+Delete: Xóa một nguyên liệu khỏi công thức.
 
-Orders
-Read: Xem đơn cần làm
-Update: pending → cooking → done
+Food:
+Update: Đánh dấu "Hết món" (Unavailable) nếu kho hết nguyên liệu (Hiển thị ngay lập tức lên trang Home của Khách).
 
-OrderItem
-Read: Xem món + số lượng
+3. LUỒNG DỮ LIỆU (DATA FLOW)
+Dưới đây là mô tả cách dữ liệu di chuyển giữa 3 vai trò để đảm bảo logic 
 
-Food
-Read: Xem món đang bán
-Update: Đánh dấu hết món
-=========================
-Mô tả: Tạo tài khoảng or không -> Đăng nhập (Không bắt buộc) ->
-     Bàn sẽ đặt món và số lượng -> Quản lý xem và chỉnh sữa -> Bếp làm xong thì chuyển đơn hàng thành đã làm -> xuất ra hóa đơn 
-=========================
-Database: 
-User
-- userID (PK)
-- username
-- password
-- role        -- user | manager | worker
-- fullname
-- phone
-- status      -- active / inactive
+Luồng 1: Quy trình Đặt món & Nấu ăn (Core Flow)
 
-DiningTable
-- tableID (PK)
-- tableName
-- seatCount
-- status      -- empty | busy | booked
+Khách (Khải): Vào Home.jsp -> Chọn Bàn -> Chọn Món -> Bấm "Đặt món".
+DB Update: Tạo Orders (status='pending'), tạo OrderItem. DiningTable chuyển sang 'Busy'.
+Bếp (Ân): Tại Kitchen.jsp thấy đơn mới -> Bấm "Nấu".
+DB Update: Orders chuyển sang 'cooking'.
+Logic Kho: Hệ thống tự động trừ Ingredient (Số lượng tồn kho) dựa trên Recipe của các món trong đơn.
+Bếp (Ân): Nấu xong -> Bấm "Hoàn thành".
+DB Update: Orders chuyển sang 'done'.
 
-Food
-- foodID (PK)
-- name
-- price
-- category
-- status      -- available | unavailable
+Luồng 2: Quy trình Thanh toán & Trả bàn
 
-Orders
-- orderID (PK)
-- tableID (FK)
-- status      -- pending | cooking | done
-- totalPrice
-- createdTime
+Khách (Khải): Ăn xong, gọi thanh toán.
+Manager (Thắng): Tại Dashboard.jsp -> Chọn bàn -> Xem hóa đơn -> Bấm "Thanh toán".
+DB Update:
+Orders set status = 'Paid'.
+DiningTable set status = 'Empty' (Bàn trống để khách khác vào).
 
-OrderItem
-- orderItemID (PK)
-- orderID (FK)
-- foodID (FK)
-- quantity
-- price
+Luồng 3: Quy trình Quản lý Kho & Công thức
+
+Manager (Thắng): Mua nguyên liệu về -> Vào Dashboard -> Cập nhật số lượng Ingredient (Nhập kho).
+Bếp (Ân): Vào Kitchen -> Tạo/Sửa Recipe để hệ thống biết 1 món ăn tiêu tốn bao nhiêu nguyên liệu.
+Hệ thống: Khi có đơn hàng (Luồng 1), hệ thống sẽ lấy Recipe nhân với số lượng món khách đặt để trừ vào Ingredient.
