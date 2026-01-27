@@ -15,9 +15,9 @@
         --bg-page: #f5f7fa;
         --text-dark: #333;
         --border-radius: 8px;
-        --success: #28a745; /* Màu xanh lá (Trống) */
-        --danger: #dc3545; /* Màu đỏ (Đang dùng) */
-        --warning: #ffc107; /* Màu vàng (Đã đặt) */
+        --success: #28a745;
+        --danger: #dc3545;
+        --warning: #ffc107;
       }
       * {
         margin: 0;
@@ -29,14 +29,13 @@
         background-color: var(--bg-page);
         color: var(--text-dark);
       }
-
       .container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
       }
 
-      /* --- 2. HEADER --- */
+      /* HEADER */
       header {
         display: flex;
         justify-content: space-between;
@@ -65,13 +64,14 @@
         gap: 8px;
       }
 
-      /* --- 3. NAVIGATION TABS --- */
+      /* TABS */
       .nav-tabs {
         display: flex;
         background: #e9ecef;
         border-radius: 30px;
         padding: 5px;
         margin-bottom: 30px;
+        overflow-x: auto;
       }
       .tab-btn {
         flex: 1;
@@ -83,6 +83,7 @@
         font-weight: 600;
         color: #666;
         transition: 0.3s;
+        white-space: nowrap;
       }
       .tab-btn.active {
         background: white;
@@ -93,7 +94,7 @@
         margin-right: 8px;
       }
 
-      /* --- 4. CONTENT SECTIONS (Ẩn/Hiện) --- */
+      /* CONTENT & TABLES */
       .section-content {
         display: none;
         animation: fadeIn 0.3s;
@@ -112,7 +113,6 @@
         }
       }
 
-      /* --- 5. STYLE RIÊNG: QUẢN LÝ BÀN --- */
       .table-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -125,13 +125,13 @@
         border: 1px solid #eee;
         position: relative;
       }
-
       .table-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
       }
+
       .badge {
         padding: 5px 12px;
         border-radius: 12px;
@@ -149,14 +149,32 @@
         background: var(--warning);
         color: #333;
       }
+      .badge.low-stock {
+        background: #dc3545;
+      }
+      .badge.ok-stock {
+        background: #28a745;
+      }
 
+      .status-control {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 15px;
+      }
       .form-select {
-        width: 100%;
+        flex: 1;
         padding: 8px;
         border-radius: 6px;
         border: 1px solid #ddd;
         background: #f9f9f9;
-        margin-bottom: 15px;
+      }
+      .btn-save-status {
+        padding: 8px 12px;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
       }
 
       .order-summary {
@@ -173,7 +191,6 @@
         display: block;
       }
 
-      /* --- 6. STYLE RIÊNG: QUẢN LÝ MÓN ĂN --- */
       .toolbar {
         display: flex;
         justify-content: space-between;
@@ -209,6 +226,7 @@
         font-weight: 600;
         color: #555;
       }
+
       .action-btn {
         width: 32px;
         height: 32px;
@@ -222,7 +240,7 @@
         background: #f0f0f0;
       }
 
-      /* --- 7. STYLE RIÊNG: HÓA ĐƠN --- */
+      /* BILLS & MODALS */
       .bill-card {
         background: white;
         border-radius: var(--border-radius);
@@ -266,13 +284,92 @@
         font-weight: bold;
         cursor: pointer;
       }
+
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 100;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s;
+      }
+      .modal.active {
+        display: flex;
+      }
+      .modal-content {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        width: 450px;
+        max-width: 90%;
+        position: relative;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .modal-header h3 {
+        color: var(--primary);
+      }
+      .close-btn {
+        font-size: 24px;
+        cursor: pointer;
+        color: #999;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        outline: none;
+      }
+      .modal-footer {
+        text-align: right;
+        margin-top: 20px;
+      }
+      .btn-cancel {
+        background: #eee;
+        color: #333;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-right: 10px;
+      }
+      .btn-confirm {
+        background: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
     <header>
       <div class="brand">
         <h1>FPT Food - Dashboard</h1>
-        <p>Quản lý nhà hàng</p>
+        <p>Xin chào, Quản lý (Thắng)</p>
       </div>
       <button class="btn-logout" onclick="window.location.href = 'login.html'">
         <i class="fas fa-sign-out-alt"></i> Đăng xuất
@@ -281,44 +378,48 @@
 
     <div class="container">
       <div class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('tables')">
+        <button class="tab-btn active" onclick="switchTab('tables', this)">
           <i class="fas fa-chair"></i> Quản lý bàn
         </button>
-        <button class="tab-btn" onclick="switchTab('food')">
-          <i class="fas fa-utensils"></i> Quản lý món ăn
+        <button class="tab-btn" onclick="switchTab('food', this)">
+          <i class="fas fa-utensils"></i> Món ăn
         </button>
-        <button class="tab-btn" onclick="switchTab('bills')">
+        <button class="tab-btn" onclick="switchTab('categories', this)">
+          <i class="fas fa-tags"></i> Danh mục
+        </button>
+        <button class="tab-btn" onclick="switchTab('inventory', this)">
+          <i class="fas fa-boxes"></i> Quản lý kho
+        </button>
+        <button class="tab-btn" onclick="switchTab('bills', this)">
           <i class="fas fa-file-invoice-dollar"></i> Hóa đơn
         </button>
       </div>
 
       <section id="tables" class="section-content active">
-        <h3 style="margin-bottom: 10px">Danh sách bàn</h3>
+        <h3 style="margin-bottom: 10px">Sơ đồ bàn ăn</h3>
         <p style="color: #777; margin-bottom: 20px">
-          Quản lý trạng thái các bàn trong nhà hàng
+          Trạng thái sẽ được đồng bộ từ Database
         </p>
-
         <div class="table-grid" id="tableGrid"></div>
       </section>
 
       <section id="food" class="section-content">
         <div class="toolbar">
           <div>
-            <h3>Quản lý món ăn</h3>
-            <p style="color: #777">Thêm, sửa, xóa món ăn trong menu</p>
+            <h3>Danh sách món ăn</h3>
+            <p style="color: #777">Quản lý menu và giá cả</p>
           </div>
-          <button class="btn-add">
-            <i class="fas fa-plus"></i> Thêm món mới
+          <button class="btn-add" onclick="openModal('foodModal', null)">
+            <i class="fas fa-plus"></i> Thêm món
           </button>
         </div>
-
         <table class="data-table">
           <thead>
             <tr>
               <th>Tên món</th>
               <th>Danh mục</th>
-              <th>Giá</th>
-              <th>Đánh giá</th>
+              <th>Giá bán</th>
+              <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -326,28 +427,177 @@
         </table>
       </section>
 
-      <section id="bills" class="section-content">
-        <h3 style="margin-bottom: 10px">Hóa đơn các bàn</h3>
-        <p style="color: #777; margin-bottom: 20px">
-          Xem và thanh toán hóa đơn
-        </p>
+      <section id="categories" class="section-content">
+        <div class="toolbar">
+          <div>
+            <h3>Danh mục món ăn</h3>
+            <p style="color: #777">Phân loại thực đơn</p>
+          </div>
+          <button class="btn-add" onclick="openModal('categoryModal', null)">
+            <i class="fas fa-plus"></i> Thêm danh mục
+          </button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Tên danh mục</th>
+              <th>Mô tả</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="categoryTableBody"></tbody>
+        </table>
+      </section>
 
+      <section id="inventory" class="section-content">
+        <div class="toolbar">
+          <div>
+            <h3>Kho nguyên liệu</h3>
+            <p style="color: #777">Kiểm tra tồn kho và nhập hàng</p>
+          </div>
+          <button
+            class="btn-add"
+            style="background: #28a745"
+            onclick="openModal('inventoryModal', null)"
+          >
+            <i class="fas fa-dolly"></i> Nhập kho mới
+          </button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tên nguyên liệu</th>
+              <th>Đơn vị</th>
+              <th>Tồn kho</th>
+              <th>Cảnh báo</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryTableBody"></tbody>
+        </table>
+      </section>
+
+      <section id="bills" class="section-content">
+        <h3 style="margin-bottom: 10px">Hóa đơn cần thanh toán</h3>
         <div id="billList"></div>
       </section>
     </div>
 
+    <div class="modal" id="foodModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="foodModalTitle">Thêm món mới</h3>
+          <span class="close-btn" onclick="closeModal('foodModal')"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editFoodIndex" />
+          <div class="form-group">
+            <label>Tên món ăn</label
+            ><input type="text" id="inputFoodName" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Danh mục</label
+            ><select id="inputFoodCat" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label>Giá bán (VNĐ)</label
+            ><input type="number" id="inputFoodPrice" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeModal('foodModal')">
+            Hủy
+          </button>
+          <button class="btn-confirm" onclick="saveFood()">Lưu lại</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="categoryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="catModalTitle">Thêm danh mục</h3>
+          <span class="close-btn" onclick="closeModal('categoryModal')"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editCatIndex" />
+          <div class="form-group">
+            <label>Tên danh mục</label
+            ><input type="text" id="inputCatName" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Mô tả</label
+            ><input type="text" id="inputCatDesc" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeModal('categoryModal')">
+            Hủy
+          </button>
+          <button class="btn-confirm" onclick="saveCategory()">Lưu lại</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="inventoryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="invModalTitle">Thêm nguyên liệu</h3>
+          <span class="close-btn" onclick="closeModal('inventoryModal')"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="editInvIndex" />
+          <div class="form-group">
+            <label>Tên nguyên liệu</label
+            ><input type="text" id="inputInvName" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Đơn vị</label
+            ><select id="inputInvUnit" class="form-control">
+              <option>kg</option>
+              <option>lít</option>
+              <option>hộp</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Số lượng</label
+            ><input type="number" id="inputInvQty" class="form-control" />
+          </div>
+          <div class="form-group">
+            <label>Ngưỡng cảnh báo</label
+            ><input
+              type="number"
+              id="inputInvMin"
+              class="form-control"
+              value="5"
+            />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-cancel" onclick="closeModal('inventoryModal')">
+            Hủy
+          </button>
+          <button class="btn-confirm" onclick="saveInventory()">Lưu lại</button>
+        </div>
+      </div>
+    </div>
+
     <script>
-      // --- 1. DỮ LIỆU GIẢ LẬP (MOCK DATA) ---
-      const tablesData = [
+      // --- DATA ---
+      let tablesData = [
         { id: 1, name: "Bàn 1", status: "empty", items: [] },
         {
           id: 2,
           name: "Bàn 2",
           status: "busy",
-          items: [
-            { name: "Pizza Hải Sản Đặc Biệt", qty: 2, price: 189000 },
-            { name: "Mì Ý Sốt Bò Bằm", qty: 1, price: 75000 },
-          ],
+          items: [{ name: "Pizza Hải Sản", qty: 2, price: 150000 }],
         },
         { id: 3, name: "Bàn 3", status: "booked", items: [] },
         { id: 4, name: "Bàn 4", status: "empty", items: [] },
@@ -355,171 +605,328 @@
           id: 5,
           name: "Bàn 5",
           status: "busy",
-          items: [{ name: "Phở Bò Đặc Biệt", qty: 3, price: 65000 }],
+          items: [{ name: "Burger Bò", qty: 3, price: 80000 }],
         },
         { id: 6, name: "Bàn 6", status: "empty", items: [] },
       ];
-
-      const foodData = [
-        {
-          name: "Pizza Hải Sản Đặc Biệt",
-          cat: "Pizza",
-          price: "189.000đ",
-          rate: 4.8,
-        },
-        {
-          name: "Burger Bò Phô Mai",
-          cat: "Burger",
-          price: "95.000đ",
-          rate: 4.6,
-        },
-        {
-          name: "Combo Sushi Cao Cấp",
-          cat: "Nhật Bản",
-          price: "259.000đ",
-          rate: 4.9,
-        },
-        { name: "Mì Ý Sốt Bò Bằm", cat: "Pasta", price: "75.000đ", rate: 4.5 },
-        {
-          name: "Salad Rau Củ Tươi",
-          cat: "Salad",
-          price: "65.000đ",
-          rate: 4.4,
-        },
+      let categoriesData = [
+        { id: 1, name: "Pizza", desc: "Bánh Pizza Ý" },
+        { id: 2, name: "Đồ uống", desc: "Nước ngọt, Trà" },
+        { id: 3, name: "Món chính", desc: "Mì Ý, Cơm" },
+      ];
+      let foodData = [
+        { name: "Pizza Hải Sản", catId: 1, price: 150000, status: "available" },
+        { name: "Burger Bò", catId: 3, price: 80000, status: "available" },
+        { name: "Pepsi Tươi", catId: 2, price: 20000, status: "available" },
+      ];
+      let inventoryData = [
+        { id: 1, name: "Bột mì", unit: "kg", qty: 50.5, min: 10 },
+        { id: 2, name: "Phô mai", unit: "kg", qty: 4.2, min: 5 },
       ];
 
-      // --- 2. HÀM CHUYỂN TAB ---
-      function switchTab(tabId) {
-        // Ẩn tất cả nội dung
+      // --- COMMON ---
+      function switchTab(tabId, btn) {
         document
           .querySelectorAll(".section-content")
           .forEach((el) => el.classList.remove("active"));
-        // Bỏ active ở nút bấm
         document
           .querySelectorAll(".tab-btn")
           .forEach((el) => el.classList.remove("active"));
-
-        // Hiện tab được chọn
         document.getElementById(tabId).classList.add("active");
-        // Active nút bấm tương ứng
-        event.currentTarget.classList.add("active");
+        if (btn) btn.classList.add("active");
+        if (tabId === "food") renderFood();
+        if (tabId === "categories") renderCategories();
+        if (tabId === "inventory") renderInventory();
+      }
+      function closeModal(id) {
+        document.getElementById(id).classList.remove("active");
       }
 
-      // --- 3. RENDER TAB: QUẢN LÝ BÀN ---
+      // --- 1. LOGIC TABLES & PAYMENT (Đã xác nhận với bạn) ---
       function renderTables() {
-        const container = document.getElementById("tableGrid");
-        let html = "";
-
-        tablesData.forEach((table) => {
-          let badgeClass =
-            table.status === "empty"
-              ? "empty"
-              : table.status === "busy"
-                ? "busy"
-                : "booked";
-          let statusText =
-            table.status === "empty"
-              ? "Trống"
-              : table.status === "busy"
-                ? "Đang dùng"
-                : "Đã đặt";
-
-          // Tính tổng tiền nếu đang dùng
-          let total = 0;
-          let summaryHtml = "";
-          if (table.status === "busy") {
-            table.items.forEach((item) => (total += item.price * item.qty));
-            summaryHtml = `
-                        <div class="order-summary">
-                            <strong>Món đã gọi:</strong><br>
-                            ${table.items.map((i) => `${i.name} x${i.qty}`).join("<br>")}
-                            <span class="order-total">Tổng: ${total.toLocaleString()}đ</span>
-                        </div>
-                    `;
-          }
-
-          html += `
-                    <div class="table-card">
-                        <div class="table-header">
-                            <b>${table.name}</b>
-                            <span class="badge ${badgeClass}">${statusText}</span>
-                        </div>
-                        <div style="margin-bottom: 5px; font-size:13px; font-weight:600;">Trạng thái</div>
-                        <select class="form-select">
-                            <option ${table.status === "empty" ? "selected" : ""}>Trống</option>
-                            <option ${table.status === "busy" ? "selected" : ""}>Đang dùng</option>
-                            <option ${table.status === "booked" ? "selected" : ""}>Đã đặt</option>
-                        </select>
-                        ${summaryHtml}
-                    </div>
-                `;
-        });
-        container.innerHTML = html;
+        document.getElementById("tableGrid").innerHTML = tablesData
+          .map((t) => {
+            let badge =
+              t.status === "empty"
+                ? "empty"
+                : t.status === "busy"
+                  ? "busy"
+                  : "booked";
+            let txt =
+              t.status === "empty"
+                ? "Trống"
+                : t.status === "busy"
+                  ? "Đang dùng"
+                  : "Đã đặt";
+            let summary =
+              t.status === "busy"
+                ? `<div class="order-summary">Đang phục vụ: ${t.items.length} món<br><span class="order-total">Tổng: ${t.items.reduce((s, i) => s + i.price * i.qty, 0).toLocaleString()}đ</span></div>`
+                : "";
+            return `
+            <div class="table-card">
+                <div class="table-header"><b>${t.name}</b><span class="badge ${badge}">${txt}</span></div>
+                <div class="status-control">
+                    <select class="form-select" id="st-${t.id}">
+                        <option value="empty" ${t.status === "empty" ? "selected" : ""}>Trống</option>
+                        <option value="busy" ${t.status === "busy" ? "selected" : ""}>Đang dùng</option>
+                        <option value="booked" ${t.status === "booked" ? "selected" : ""}>Đã đặt</option>
+                    </select>
+                    <button class="btn-save-status" onclick="updateTable(${t.id})"><i class="fas fa-save"></i></button>
+                </div>
+                ${summary}
+            </div>`;
+          })
+          .join("");
+      }
+      function updateTable(id) {
+        const val = document.getElementById(`st-${id}`).value;
+        // Giả lập gửi Backend Update DB
+        const t = tablesData.find((x) => x.id === id);
+        if (t) t.status = val;
+        alert(
+          `Đã gửi lệnh UPDATE DiningTable SET status='${val}' WHERE id=${id}`,
+        );
+        renderTables();
+        renderBills(); // Reload cả bên bill nếu bàn chuyển trạng thái
       }
 
-      // --- 4. RENDER TAB: QUẢN LÝ MÓN ĂN ---
+      // --- 2. LOGIC FOOD (EDIT & DELETE) ---
       function renderFood() {
-        const tbody = document.getElementById("foodTableBody");
-        let html = "";
-        foodData.forEach((food) => {
-          html += `
-                    <tr>
-                        <td style="font-weight:600;">${food.name}</td>
-                        <td>${food.cat}</td>
-                        <td>${food.price}</td>
-                        <td style="color:#ffc107;"><i class="fas fa-star"></i> ${food.rate}</td>
-                        <td>
-                            <button class="action-btn"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn" style="color:red;"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-        });
-        tbody.innerHTML = html;
+        document.getElementById("foodTableBody").innerHTML = foodData
+          .map((f, i) => {
+            const cat = categoriesData.find((c) => c.id === f.catId);
+            return `<tr>
+                <td><b>${f.name}</b></td><td>${cat ? cat.name : "Khác"}</td><td>${f.price.toLocaleString()}đ</td>
+                <td>${f.status === "available" ? '<span class="badge ok-stock">Sẵn sàng</span>' : '<span class="badge low-stock">Hết</span>'}</td>
+                <td>
+                    <button class="action-btn" onclick="openModal('foodModal', ${i})"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn" style="color:red;" onclick="deleteFood(${i})"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+          })
+          .join("");
       }
 
-      // --- 5. RENDER TAB: HÓA ĐƠN ---
-      function renderBills() {
-        const container = document.getElementById("billList");
-        let html = "";
+      // Mở Modal: Nếu có index => Edit, Nếu index null => Add
+      function openModal(modalId, index) {
+        document.getElementById(modalId).classList.add("active");
 
-        // Chỉ lấy các bàn đang có người ngồi (busy)
-        const busyTables = tablesData.filter((t) => t.status === "busy");
-
-        busyTables.forEach((table) => {
-          let total = 0;
-          let itemsHtml = table.items
-            .map((item) => {
-              let itemTotal = item.qty * item.price;
-              total += itemTotal;
-              return `
-                        <div class="bill-item">
-                            <span>${item.name} (x${item.qty})</span>
-                            <span>${itemTotal.toLocaleString()}đ</span>
-                        </div>
-                    `;
-            })
+        if (modalId === "foodModal") {
+          // Load danh mục
+          document.getElementById("inputFoodCat").innerHTML = categoriesData
+            .map((c) => `<option value="${c.id}">${c.name}</option>`)
             .join("");
 
-          html += `
-                    <div class="bill-card">
-                        <div class="bill-header">
-                            <span>${table.name}</span>
-                            <span class="badge busy">Đang dùng</span>
-                        </div>
-                        ${itemsHtml}
-                        <div class="bill-total">
-                            <span>Tổng cộng:</span>
-                            <span>${total.toLocaleString()}đ</span>
-                        </div>
-                        <button class="btn-pay" onclick="alert('Đã thanh toán cho ${table.name}')"><i class="fas fa-money-bill-wave"></i> Thanh toán</button>
-                    </div>
-                `;
-        });
-        container.innerHTML = html;
+          if (index !== null) {
+            // Mode Edit
+            document.getElementById("foodModalTitle").innerText =
+              "Cập nhật món ăn";
+            document.getElementById("editFoodIndex").value = index;
+            const item = foodData[index];
+            document.getElementById("inputFoodName").value = item.name;
+            document.getElementById("inputFoodPrice").value = item.price;
+            document.getElementById("inputFoodCat").value = item.catId;
+          } else {
+            // Mode Add
+            document.getElementById("foodModalTitle").innerText =
+              "Thêm món mới";
+            document.getElementById("editFoodIndex").value = "-1";
+            document.getElementById("inputFoodName").value = "";
+            document.getElementById("inputFoodPrice").value = "";
+          }
+        }
+        // Logic tương tự cho Category và Inventory...
+        else if (modalId === "categoryModal") {
+          if (index !== null) {
+            document.getElementById("catModalTitle").innerText = "Sửa danh mục";
+            document.getElementById("editCatIndex").value = index;
+            document.getElementById("inputCatName").value =
+              categoriesData[index].name;
+            document.getElementById("inputCatDesc").value =
+              categoriesData[index].desc;
+          } else {
+            document.getElementById("catModalTitle").innerText =
+              "Thêm danh mục";
+            document.getElementById("editCatIndex").value = "-1";
+            document.getElementById("inputCatName").value = "";
+            document.getElementById("inputCatDesc").value = "";
+          }
+        } else if (modalId === "inventoryModal") {
+          if (index !== null) {
+            document.getElementById("invModalTitle").innerText = "Sửa kho";
+            document.getElementById("editInvIndex").value = index;
+            const i = inventoryData[index];
+            document.getElementById("inputInvName").value = i.name;
+            document.getElementById("inputInvUnit").value = i.unit;
+            document.getElementById("inputInvQty").value = i.qty;
+            document.getElementById("inputInvMin").value = i.min;
+          } else {
+            document.getElementById("invModalTitle").innerText = "Nhập kho";
+            document.getElementById("editInvIndex").value = "-1";
+            document.getElementById("inputInvName").value = "";
+            document.getElementById("inputInvQty").value = "";
+          }
+        }
       }
 
-      // --- KHỞI CHẠY ---
+      function saveFood() {
+        const idx = parseInt(document.getElementById("editFoodIndex").value);
+        const name = document.getElementById("inputFoodName").value;
+        const price = parseFloat(
+          document.getElementById("inputFoodPrice").value,
+        );
+        const catId = parseInt(document.getElementById("inputFoodCat").value);
+
+        if (idx === -1) {
+          // Create
+          foodData.push({ name, price, catId, status: "available" });
+          alert("Đã gửi lệnh INSERT xuống Database");
+        } else {
+          // Update
+          foodData[idx].name = name;
+          foodData[idx].price = price;
+          foodData[idx].catId = catId;
+          alert(`Đã gửi lệnh UPDATE Food SET... WHERE id=${idx}`);
+        }
+        closeModal("foodModal");
+        renderFood();
+      }
+
+      function deleteFood(index) {
+        if (
+          confirm(
+            "Bạn có chắc muốn xóa món này? (Lệnh DELETE sẽ gửi xuống Backend)",
+          )
+        ) {
+          foodData.splice(index, 1);
+          renderFood();
+        }
+      }
+
+      // --- 3. LOGIC CATEGORY (EDIT & DELETE) ---
+      function renderCategories() {
+        document.getElementById("categoryTableBody").innerHTML = categoriesData
+          .map(
+            (c, i) => `<tr>
+            <td>#${c.id}</td><td><b>${c.name}</b></td><td>${c.desc}</td>
+            <td><button class="action-btn" onclick="openModal('categoryModal', ${i})"><i class="fas fa-edit"></i></button>
+                <button class="action-btn" style="color:red;" onclick="deleteCategory(${i})"><i class="fas fa-trash"></i></button></td>
+        </tr>`,
+          )
+          .join("");
+      }
+
+      function saveCategory() {
+        const idx = parseInt(document.getElementById("editCatIndex").value);
+        const name = document.getElementById("inputCatName").value;
+        const desc = document.getElementById("inputCatDesc").value;
+
+        if (idx === -1) {
+          categoriesData.push({ id: Date.now(), name, desc });
+        } else {
+          categoriesData[idx].name = name;
+          categoriesData[idx].desc = desc;
+        }
+
+        alert("Dữ liệu đã được lưu!");
+        closeModal("categoryModal");
+        renderCategories();
+      }
+      function deleteCategory(i) {
+        if (confirm("Xóa danh mục này?")) {
+          categoriesData.splice(i, 1);
+          renderCategories();
+        }
+      }
+
+      // --- 4. LOGIC INVENTORY (EDIT & DELETE) ---
+      function renderInventory() {
+        document.getElementById("inventoryTableBody").innerHTML = inventoryData
+          .map((item, i) => {
+            const isLow = item.qty < item.min;
+            return `<tr>
+                <td>${item.name}</td><td>${item.unit}</td><td style="${isLow ? "color:red;font-weight:bold" : ""}">${item.qty}</td>
+                <td>${isLow ? '<span class="badge low-stock">Sắp hết</span>' : '<span class="badge ok-stock">Ổn</span>'}</td>
+                <td><button class="action-btn" onclick="openModal('inventoryModal', ${i})"><i class="fas fa-edit"></i></button>
+                    <button class="action-btn" style="color:red;" onclick="deleteInventory(${i})"><i class="fas fa-trash"></i></button></td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      function saveInventory() {
+        const idx = parseInt(document.getElementById("editInvIndex").value);
+        const name = document.getElementById("inputInvName").value;
+        const unit = document.getElementById("inputInvUnit").value;
+        const qty = parseFloat(document.getElementById("inputInvQty").value);
+        const min = parseFloat(document.getElementById("inputInvMin").value);
+
+        if (idx === -1) {
+          inventoryData.push({ id: Date.now(), name, unit, qty, min });
+        } else {
+          inventoryData[idx].name = name;
+          inventoryData[idx].unit = unit;
+          inventoryData[idx].qty = qty;
+          inventoryData[idx].min = min;
+        }
+        alert("Kho đã cập nhật!");
+        closeModal("inventoryModal");
+        renderInventory();
+      }
+      function deleteInventory(i) {
+        if (confirm("Xóa nguyên liệu này?")) {
+          inventoryData.splice(i, 1);
+          renderInventory();
+        }
+      }
+
+      // --- 5. LOGIC BILLS & PAYMENT (Đã xác nhận logic) ---
+      function renderBills() {
+        const container = document.getElementById("billList");
+        const busy = tablesData.filter((t) => t.status === "busy");
+        if (busy.length === 0) {
+          container.innerHTML =
+            "<p style='text-align:center;color:#999'>Không có hóa đơn nào</p>";
+          return;
+        }
+
+        container.innerHTML = busy
+          .map((t) => {
+            const total = t.items.reduce((acc, i) => acc + i.price * i.qty, 0);
+            const itemsHtml = t.items
+              .map(
+                (i) =>
+                  `<div class="bill-item"><span>${i.name} (x${i.qty})</span><span>${(i.price * i.qty).toLocaleString()}đ</span></div>`,
+              )
+              .join("");
+            return `
+              <div class="bill-card">
+                  <div class="bill-header"><span>${t.name}</span><span class="badge busy">Chờ thanh toán</span></div>
+                  ${itemsHtml}
+                  <div class="bill-total"><span>Tổng cộng:</span><span>${total.toLocaleString()}đ</span></div>
+                  <button class="btn-pay" onclick="payBill(${t.id}, '${t.name}')"><i class="fas fa-money-bill-wave"></i> Thanh toán</button>
+              </div>`;
+          })
+          .join("");
+      }
+
+      function payBill(id, name) {
+        if (confirm(`Xác nhận thanh toán cho ${name}?`)) {
+          // Logic: 1. Update Order -> Paid (Backend)
+          //        2. Update Table -> Empty (Backend)
+          //        3. Reload
+          const t = tablesData.find((x) => x.id === id);
+          if (t) {
+            t.status = "empty";
+            t.items = []; // Xóa món ăn trên bàn
+            alert("Thanh toán thành công! Bàn đã được reset về Trống.");
+            renderTables();
+            renderBills();
+          }
+        }
+      }
+
+      // INIT
       renderTables();
       renderFood();
       renderBills();
