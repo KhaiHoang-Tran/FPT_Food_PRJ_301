@@ -1,0 +1,67 @@
+USE FPT_Food_PRJ;
+GO
+
+-- 1. Dữ liệu bảng User
+INSERT INTO [User] (username, [password], role, fullname, phone, status) VALUES
+('admin1', '123', 'manager', N'Nguyễn Quản Lý', '0912345678', 'active'),
+('chef_ha', '123', 'worker', N'Trần Minh Hà', '0987654321', 'active'),
+('staff_huy', '123', 'worker', N'Lê Quang Huy', '0909090909', 'active'),
+('khach_hang1', '123', 'user', N'Phạm Mỹ Linh', '0977123456', 'active');
+
+-- 2. Dữ liệu bảng DiningTable
+INSERT INTO DiningTable (tableName, seatCount, status) VALUES
+(N'Bàn 01', 2, 'empty'),
+(N'Bàn 02', 4, 'busy'),
+(N'Bàn 03', 4, 'empty'),
+(N'Bàn 04', 6, 'booked'),
+(N'Bàn VIP 01', 10, 'empty');
+
+-- 3. Dữ liệu bảng Category
+INSERT INTO Category (name, description) VALUES
+(N'Khai vị', N'Các món nhẹ đầu bữa'),
+(N'Món chính', N'Món ăn no, giàu dinh dưỡng'),
+(N'Đồ uống', N'Nước giải khát, trà, cà phê'),
+(N'Tráng miệng', N'Trái cây, chè, bánh ngọt');
+
+-- 4. Dữ liệu bảng Food
+INSERT INTO Food (name, price, categoryID, status) VALUES
+(N'Gỏi cuốn tôm thịt', 45000, 1, 'available'),
+(N'Phở Bò FPT', 65000, 2, 'available'),
+(N'Cơm gà Hải Nam', 55000, 2, 'available'),
+(N'Trà đào cam sả', 35000, 3, 'available'),
+(N'Chè hạt sen', 30000, 4, 'available');
+
+-- 5. Dữ liệu bảng Voucher
+INSERT INTO Voucher (code, discountPercent, startDate, endDate, minOrderValue, status) VALUES
+('FPTFRESH', 10, '2023-01-01', '2026-12-31', 100000, 'active'),
+('KM50', 50, '2023-01-01', '2023-12-31', 500000, 'expired'),
+('VOUCHER20', 20, '2024-01-01', '2026-01-01', 200000, 'active');
+
+-- 6. Dữ liệu bảng Orders (Tạo đơn hàng trước)
+INSERT INTO Orders (tableID, voucherID, status, totalPrice, finalPrice) VALUES
+(2, 1, 'cooking', 110000, 99000), -- Bàn 02 đang nấu, có dùng voucher
+(1, NULL, 'pending', 45000, 45000);
+
+-- 7. Dữ liệu bảng OrderItem (Chi tiết cho các đơn trên)
+INSERT INTO OrderItem (orderID, foodID, quantity, price) VALUES
+(1, 2, 1, 65000), -- 1 Phở bò
+(1, 1, 1, 45000), -- 1 Gỏi cuốn
+(2, 1, 1, 45000); -- 1 Gỏi cuốn
+
+-- 8. Dữ liệu bảng Review
+INSERT INTO Review (userID, foodID, rating, comment) VALUES
+(4, 2, 5, N'Phở rất ngon, nước dùng đậm đà!'),
+(4, 4, 4, N'Trà đào hơi ngọt một chút nhưng rất thơm.');
+
+-- 9. Dữ liệu bảng Ingredient
+INSERT INTO Ingredient (name, unit, quantityInStock, minThreshold) VALUES
+(N'Bánh phở', N'kg', 10, 2),
+(N'Thịt bò', N'kg', 5, 1),
+(N'Tôm tươi', N'kg', 3, 0.5),
+(N'Gạo nếp', N'kg', 20, 5);
+
+-- 10. Dữ liệu bảng Recipe
+INSERT INTO Recipe (foodID, ingredientID, amountNeeded) VALUES
+(2, 1, 0.2), -- Phở bò cần 0.2kg bánh phở
+(2, 2, 0.1), -- Phở bò cần 0.1kg thịt bò
+(1, 3, 0.05); -- Gỏi cuốn cần 0.05kg tôm
