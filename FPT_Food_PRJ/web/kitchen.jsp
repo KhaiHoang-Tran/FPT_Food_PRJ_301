@@ -1,0 +1,259 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.*" %>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%! 
+    // --- 1. MOCK DATA (MODEL) ---
+    public static class Ingredient {
+        public int id; public String name; public String unit; public double qty; public double min;
+        public Ingredient(int id, String n, String u, double q, double m) { this.id=id; name=n; unit=u; qty=q; min=m; }
+    }
+    public static class RecipeItem {
+        public int ingId; public double qtyNeeded;
+        public RecipeItem(int id, double q) { ingId=id; qtyNeeded=q; }
+    }
+    public static class Food {
+        public int id; public String name; public boolean status;
+        public List<RecipeItem> recipe = new ArrayList<>();
+        public Food(int id, String n, boolean s) { this.id=id; name=n; status=s; }
+    }
+    public static class OrderItem {
+        public String name; public int qty;
+        public OrderItem(String n, int q) { name=n; qty=q; }
+    }
+    public static class Order {
+        public int id; public String table; public String time; public String status;
+        public List<OrderItem> items = new ArrayList<>();
+        public Order(int id, String t, String time, String st) { this.id=id; table=t; this.time=time; status=st; }
+    }
+%>
+
+<%
+    // --- 2. KHỞI TẠO DỮ LIỆU ---
+    List<Ingredient> inventory = new ArrayList<>();
+    inventory.add(new Ingredient(1, "Bột mì", "kg", 50.5, 10));
+    inventory.add(new Ingredient(2, "Phô mai", "kg", 0.5, 5));
+    inventory.add(new Ingredient(3, "Thịt bò", "kg", 15.0, 5));
+    
+    List<Food> foods = new ArrayList<>();
+    Food f1 = new Food(1, "Pizza Hải Sản", true);
+    f1.recipe.add(new RecipeItem(1, 1)); 
+    f1.recipe.add(new RecipeItem(2, 0.15)); 
+    foods.add(f1);
+    foods.add(new Food(2, "Burger Bò", true));
+    
+    List<Order> orders = new ArrayList<>();
+    Order o1 = new Order(101, "Bàn 1", "10:30", "pending");
+    o1.items.add(new OrderItem("Pizza", 1));
+    orders.add(o1);
+    
+    Order o2 = new Order(102, "Bàn 5", "10:35", "paid"); // Thêm 1 đơn đang nấu để test filter
+    o2.items.add(new OrderItem("Burger", 2));
+    orders.add(o2);
+    
+    // Xử lý giữ Tab chính khi reload (Form submit)
+    String activeSection = request.getParameter("section");
+    if(activeSection == null) activeSection = "orders";
+    
+    String selectedFoodIdStr = request.getParameter("foodId");
+    int selectedFoodId = (selectedFoodIdStr != null) ? Integer.parseInt(selectedFoodIdStr) : -1;
+%>
+
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <title>FPT Food - Bếp</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="./css/kitchen.css"/>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><h1>FPT Food - Bếp</h1></div>
+        <a href="login.jsp" style="text-decoration:none; color:#333;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+    </header>
+
+    <div class="container">
+        <div class="main-nav">
+            <button class="nav-pill <%= activeSection.equals("orders") ? "active" : "" %>" onclick="switchSection('orders', this)">
+                <i class="fas fa-fire"></i> Đơn hàng
+            </button>
+            <button class="nav-pill <%= activeSection.equals("recipes") ? "active" : "" %>" onclick="switchSection('recipes', this)">
+                <i class="fas fa-book-open"></i> Công thức
+            </button>
+            <button class="nav-pill <%= activeSection.equals("inventory") ? "active" : "" %>" onclick="switchSection('inventory', this)">
+                <i class="fas fa-boxes"></i> Kiểm tra kho
+            </button>
+        </div>
+
+        <div id="section-orders" class="section-content <%= activeSection.equals("orders") ? "active" : "" %>">
+            
+            <div class="tabs-container">
+                <button class="sub-tab-btn active" onclick="filterOrders('pending', this)">Chờ xử lý</button>
+                <button class="sub-tab-btn" onclick="filterOrders('cooking', this)">Đang nấu</button>
+                <button class="sub-tab-btn" onclick="filterOrders('all', this)">Tất cả</button>
+            </div>
+
+            <div class="order-grid">
+                <% for (Order o : orders) { %>
+                    <div class="order-card status-<%= o.status %>">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            <b><%= o.table %></b> <span style="color:#777"><%= o.time %></span>
+                        </div>
+                        <div style="margin-bottom:15px;">
+                            <% for (OrderItem item : o.items) { %>
+                                <div><b style="color:var(--primary)">x<%= item.qty %></b> <%= item.name %></div>
+                            <% } %>
+                        </div>
+                        
+                        <form action="UpdateOrderServlet" method="POST">
+                            <input type="hidden" name="orderId" value="<%= o.id %>">
+                            <% if ("pending".equals(o.status)) { %>
+                                <input type="hidden" name="status" value="cooking">
+                                <button class="btn-action btn-receive">Nhận đơn & Nấu</button>
+                            <% } else if ("cooking".equals(o.status)) { %>
+                                <input type="hidden" name="status" value="done">
+                                <button class="btn-action btn-done">Xong món</button>
+                            <% } else { %>
+                                <div style="text-align:center; color:green;"><b>Đã xong</b></div>
+                            <% } %>
+                        </form>
+                    </div>
+                <% } %>
+            </div>
+            
+            <div id="empty-msg" style="text-align:center; color:#999; margin-top:30px; display:none;">
+                Không có đơn hàng nào ở trạng thái này.
+            </div>
+        </div>
+
+        <div id="section-recipes" class="section-content <%= activeSection.equals("recipes") ? "active" : "" %>">
+            <div class="recipe-layout">
+                <div class="sidebar">
+                    <h4>Menu món ăn</h4>
+                    <% for (Food f : foods) { %>
+                        <div class="food-item <%= f.id == selectedFoodId ? "active" : "" %>" 
+                             onclick="window.location.href='?section=recipes&foodId=<%= f.id %>'">
+                            <span><%= f.name %></span>
+                            <form action="UpdateFoodStatusServlet" method="POST" style="margin:0" onclick="event.stopPropagation()">
+                                <input type="hidden" name="foodId" value="<%= f.id %>">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" <%= f.status ? "checked" : "" %> onchange="this.form.submit()">
+                                    <span class="slider"></span>
+                                </label>
+                            </form>
+                        </div>
+                    <% } %>
+                </div>
+
+                <div class="content">
+                    <% 
+                        Food selectedFood = null;
+                        for(Food f : foods) { if(f.id == selectedFoodId) selectedFood = f; }
+                        if (selectedFood != null) { 
+                    %>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h2 style="color:var(--primary); margin:0;"><%= selectedFood.name %></h2>
+                            <button onclick="openModal()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">+ Thêm nguyên liệu</button>
+                        </div>
+                        <table>
+                            <thead><tr><th>Nguyên liệu</th><th>Cần dùng</th><th>Tồn kho</th><th>Đơn vị</th></tr></thead>
+                            <tbody>
+                                <% for (RecipeItem rItem : selectedFood.recipe) {
+                                    Ingredient stock = null;
+                                    for(Ingredient i : inventory) { if(i.id == rItem.ingId) stock = i; }
+                                %>
+                                    <tr>
+                                        <td><%= stock != null ? stock.name : "???" %></td>
+                                        <td><%= rItem.qtyNeeded %></td>
+                                        <td style="color:<%= (stock!=null && stock.qty < rItem.qtyNeeded) ? "red" : "green" %>"><%= stock != null ? stock.qty : 0 %></td>
+                                        <td><%= stock != null ? stock.unit : "" %></td>
+                                    </tr>
+                                <% } %>
+                            </tbody>
+                        </table>
+                    <% } else { %>
+                        <p style="text-align:center; color:#999; margin-top:50px;">Chọn một món ăn bên trái để xem</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+
+        <div id="section-inventory" class="section-content <%= activeSection.equals("inventory") ? "active" : "" %>">
+            <h3>Tình trạng kho</h3>
+            <% for (Ingredient i : inventory) { %>
+                <div class="inv-card">
+                    <b><%= i.name %></b><br>
+                    <span style="font-size:20px"><%= i.qty %> <%= i.unit %></span>
+                </div>
+            <% } %>
+        </div>
+    </div>
+
+    <div class="modal" id="ingredientModal">
+        <div class="modal-content">
+            <h3 style="margin-top:0; color:var(--primary)">Thêm nguyên liệu</h3>
+            <form action="AddIngredientServlet" method="POST">
+                <input type="hidden" name="foodId" value="<%= selectedFoodId %>">
+                <div class="form-group">
+                    <label>Chọn nguyên liệu</label>
+                    <select name="ingId" class="form-control">
+                        <% for(Ingredient i : inventory) { %> <option value="<%= i.id %>"><%= i.name %></option> <% } %>
+                    </select>
+                </div>
+                <div class="form-group"><label>Số lượng cần</label><input type="number" name="qty" step="0.1" class="form-control" required></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
+                    <button type="submit" class="btn-confirm">Lưu lại</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 1. JS EVENT: CHUYỂN MAIN TAB
+        function switchSection(sectionId, btn) {
+            document.querySelectorAll('.section-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-pill').forEach(el => el.classList.remove('active'));
+            document.getElementById('section-' + sectionId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // 2. JS EVENT: LỌC ĐƠN HÀNG (SUB-NAV)
+        function filterOrders(status, btn) {
+            // Active nút bấm
+            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Lọc Order Card
+            const cards = document.querySelectorAll('.order-card');
+            let hasItem = false;
+
+            cards.forEach(card => {
+                // Kiểm tra class (status-pending, status-cooking...)
+                if (status === 'all' || card.classList.contains('status-' + status)) {
+                    card.style.display = 'block';
+                    hasItem = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            // Hiển thị thông báo nếu rỗng
+            document.getElementById('empty-msg').style.display = hasItem ? 'none' : 'block';
+        }
+
+        // 3. JS EVENT: POPUP
+        function openModal() { document.getElementById('ingredientModal').classList.add('active'); }
+        function closeModal() { document.getElementById('ingredientModal').classList.remove('active'); }
+        window.onclick = function(event) { if (event.target == document.getElementById('ingredientModal')) closeModal(); }
+        
+        // Mặc định chạy lọc Pending khi mới vào trang
+        window.onload = function() {
+            // Tìm nút đang active ở sub-tab (nếu có) và click nó để kích hoạt bộ lọc
+            const activeSubBtn = document.querySelector('.sub-tab-btn.active');
+            if(activeSubBtn) filterOrders('pending', activeSubBtn);
+        }
+    </script>
+</body>
+</html>
