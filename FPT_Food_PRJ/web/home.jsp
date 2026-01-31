@@ -231,7 +231,11 @@
 
                     <% for (Food f : foodsView) {%>
                     <div class="food-card" onclick="openFood(<%= f.id%>)">
-                        <div class="food-img-placeholder"><i class="fas fa-utensils food-icon"></i></div>
+                        <div class="food-img-container">
+                            <img src="img/che-hat-sen.png" 
+                                 alt="" 
+                                 class="food-img">
+                        </div>
                         <div class="card-body">
                             <div>
                                 <div style="font-weight:bold;"><%= f.name%></div>
@@ -397,7 +401,7 @@
                         <div class="review-text"><%= r.comment%></div>
                     </div>
                     <% }
-          }%>
+                        }%>
                 </div>
             </div>
         </div>
