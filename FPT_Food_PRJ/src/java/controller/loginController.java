@@ -11,11 +11,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 /**
  *
  * @author AN
  */
-public class MainController extends HttpServlet {
+public class loginController extends HttpServlet {
    
     /** 
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
@@ -29,19 +30,21 @@ public class MainController extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
-        try (PrintWriter out = response.getWriter()) {
-            /* TODO output your page here. You may use following sample code. */
-            String action = request.getParameter("action");
-            String url = "";
-            switch (action) {
-                case "login":
-                    url = "loginController";
-                    break;
-                default:
-                    throw new AssertionError();
-            }
-            request.getRequestDispatcher(url).forward(request, response);
-        }
+        // lay du lieu tu trang login.jsp
+        
+        // tao doi tuong
+        
+        // chuyen du lieu xuong userDAO
+        
+        // lay ve user tu userDAO
+        
+        // kiem tra status
+        
+        // kiem tra role
+        
+        // set url
+        
+        // chuyen trang
     } 
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

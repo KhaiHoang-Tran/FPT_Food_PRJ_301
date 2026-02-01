@@ -26,12 +26,8 @@
 
       <h2>FPT Food</h2>
       <p class="subtitle">Đăng nhập để đặt món</p>
-
-      <div id="errorMessage" class="error-msg">
-        Tên đăng nhập hoặc mật khẩu không đúng!
-      </div>
-
-      <form action="LoginServlet" method="GET">
+      
+      <form action="MainController?action=login" method="Post">
         <div class="form-group">
           <label>Tên đăng nhập</label>
           <input
@@ -65,26 +61,5 @@
         </button>
       </form>
     </div>
-
-    <script>
-      // Đoạn script nhỏ này để xử lý hiển thị lỗi khi Servlet redirect về
-      // Ví dụ: Khi đăng nhập sai, Servlet sẽ redirect về: Login.html?status=failed
-
-      window.onload = function () {
-        const urlParams = new URLSearchParams(window.location.search);
-
-        // Kiểm tra xem trên URL có tham số 'status=failed' không
-        if (urlParams.get("status") === "failed") {
-          const errorMsg = document.getElementById("errorMessage");
-          errorMsg.style.display = "block";
-
-          // Nếu có thông điệp cụ thể từ server (ví dụ: ?message=Sai pass)
-          const msg = urlParams.get("message");
-          if (msg) {
-            errorMsg.innerText = decodeURIComponent(msg);
-          }
-        }
-      };
-    </script>
   </body>
 </html>
