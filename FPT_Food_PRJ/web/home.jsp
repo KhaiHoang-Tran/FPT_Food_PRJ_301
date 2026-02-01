@@ -3,78 +3,106 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 
 <%!
+    // Food(foodID, name, price, categoryID, status)
     public static class Food {
 
-        public int id;
+        public int foodID;
         public String name;
-        public int price;
-        public int catId;
-        public String catName;
-        public boolean active;
+        public double price;
+        public Integer categoryID;   // NULL allowed
+        public String status;        // available/unavailable
 
-        public Food(int id, String name, int price, int catId, String catName, boolean active) {
-            this.id = id;
+        // Field phụ để hiển thị UI (do DB cần JOIN Category)
+        public String categoryName;
+
+        public Food(int foodID, String name, double price, Integer categoryID, String status, String categoryName) {
+            this.foodID = foodID;
             this.name = name;
             this.price = price;
-            this.catId = catId;
-            this.catName = catName;
-            this.active = active;
+            this.categoryID = categoryID;
+            this.status = status;
+            this.categoryName = categoryName;
         }
     }
 
+    // Review(reviewID, userID, foodID, rating, comment, reviewDate)
     public static class Review {
 
-        public int foodId;
-        public String user;
-        public int rate;
+        public int reviewID;
+        public int userID;
+        public int foodID;
+        public int rating;
         public String comment;
+        public String reviewDate;
 
-        public Review(int foodId, String user, int rate, String comment) {
-            this.foodId = foodId;
-            this.user = user;
-            this.rate = rate;
+        // Field phụ để hiển thị UI (do DB cần JOIN User)
+        public String username;
+
+        public Review(int reviewID, int userID, int foodID, int rating, String comment, String reviewDate, String username) {
+            this.reviewID = reviewID;
+            this.userID = userID;
+            this.foodID = foodID;
+            this.rating = rating;
             this.comment = comment;
+            this.reviewDate = reviewDate;
+            this.username = username;
         }
     }
 
+    // Orders(orderID, tableID, voucherID, status, totalPrice, finalPrice, createdTime)
     public static class OrderHistory {
 
-        public int id;
-        public String date;
-        public String status;
-        public int total;
+        public int orderID;
+        public int tableID;
+        public Integer voucherID;
+        public String status;          // pending/cooking/done/paid
+        public double totalPrice;
+        public double finalPrice;
+        public String createdTime;     // demo string
+
+        // Field phụ để hiển thị UI (do DB cần JOIN DiningTable)
+        public String tableName;
+
+        // Field phụ để hiển thị UI (do DB cần JOIN OrderItem + Food)
         public List<String> items = new ArrayList<>();
 
-        public OrderHistory(int id, String date, String status, int total) {
-            this.id = id;
-            this.date = date;
+        public OrderHistory(int orderID, int tableID, String tableName, Integer voucherID,
+                String status, double totalPrice, double finalPrice, String createdTime) {
+            this.orderID = orderID;
+            this.tableID = tableID;
+            this.tableName = tableName;
+            this.voucherID = voucherID;
             this.status = status;
-            this.total = total;
+            this.totalPrice = totalPrice;
+            this.finalPrice = finalPrice;
+            this.createdTime = createdTime;
         }
     }
 %>
 
 <%
     // ===== DATA (Mock nếu chưa có Servlet/DAO) =====
+    // Khi có DB: setAttribute từ Servlet/DAO, bỏ phần mock bên dưới.
     List<Food> foods = (List<Food>) request.getAttribute("foods");
     if (foods == null) {
         foods = new ArrayList<>();
-        foods.add(new Food(1, "Pizza Hải Sản", 150000, 1, "Pizza", true));
-        foods.add(new Food(2, "Pepsi Tươi", 20000, 2, "Đồ uống", true));
-        foods.add(new Food(3, "Burger Bò", 80000, 3, "Món chính", true));
-        foods.add(new Food(4, "Trà Đào", 25000, 2, "Đồ uống", true));
+        foods.add(new Food(1, "Pizza Hải Sản", 150000, 1, "available", "Pizza"));
+        foods.add(new Food(2, "Pepsi Tươi", 20000, 2, "available", "Đồ uống"));
+        foods.add(new Food(3, "Burger Bò", 80000, 3, "available", "Món chính"));
+        foods.add(new Food(4, "Trà Đào", 25000, 2, "available", "Đồ uống"));
         request.setAttribute("foods", foods);
     }
 
     List<OrderHistory> history = (List<OrderHistory>) request.getAttribute("orderHistory");
     if (history == null) {
         history = new ArrayList<>();
-        OrderHistory h1 = new OrderHistory(101, "27/01/2025 12:30", "paid", 170000);
+
+        OrderHistory h1 = new OrderHistory(101, 1, "Bàn 01", null, "paid", 170000, 170000, "27/01/2025 12:30");
         h1.items.add("Pizza Hải Sản (x1)");
         h1.items.add("Pepsi Tươi (x1)");
         history.add(h1);
 
-        OrderHistory h2 = new OrderHistory(102, "27/01/2025 18:45", "cooking", 80000);
+        OrderHistory h2 = new OrderHistory(102, 5, "Bàn 05", null, "cooking", 80000, 80000, "27/01/2025 18:45");
         h2.items.add("Burger Bò (x1)");
         history.add(h2);
 
@@ -84,9 +112,9 @@
     List<Review> reviews = (List<Review>) request.getAttribute("reviews");
     if (reviews == null) {
         reviews = new ArrayList<>();
-        reviews.add(new Review(1, "NguyenVanA", 5, "Pizza rất ngon, nhiều phô mai!"));
-        reviews.add(new Review(1, "TranThiB", 4, "Hơi đợi lâu xíu nhưng ngon."));
-        reviews.add(new Review(3, "LeVanC", 5, "Burger to, ăn bao no."));
+        reviews.add(new Review(1, 1, 1, 5, "Pizza rất ngon, nhiều phô mai!", "27/01/2025", "NguyenVanA"));
+        reviews.add(new Review(2, 2, 1, 4, "Hơi đợi lâu xíu nhưng ngon.", "27/01/2025", "TranThiB"));
+        reviews.add(new Review(3, 1, 3, 5, "Burger to, ăn bao no.", "27/01/2025", "LeVanC"));
         request.setAttribute("reviews", reviews);
     }
 
@@ -95,10 +123,12 @@
     if (view == null) {
         view = "menu";
     }
+
     String cat = request.getParameter("cat");
     if (cat == null) {
         cat = "all";
     }
+
     String q = request.getParameter("q");
     if (q == null) {
         q = "";
@@ -109,7 +139,7 @@
     String foodIdStr = request.getParameter("foodId");
     int openFoodId = (foodIdStr != null && foodIdStr.matches("\\d+")) ? Integer.parseInt(foodIdStr) : -1;
 
-    // ===== CART in session =====
+    // ===== CART in session (foodID -> qty) =====
     Map<Integer, Integer> cart = (Map<Integer, Integer>) session.getAttribute("cart");
     if (cart == null) {
         cart = new LinkedHashMap<>();
@@ -121,14 +151,15 @@
         discountPercent = 0;
     }
 
-    // Map food
+    // Map foodID -> Food
     Map<Integer, Food> foodMap = new HashMap<>();
     for (Food f : foods) {
-        foodMap.put(f.id, f);
+        foodMap.put(f.foodID, f);
     }
 
     int totalQty = 0;
-    long tempTotal = 0;
+    double tempTotal = 0;
+
     class CartLine {
 
         Food food;
@@ -139,6 +170,7 @@
             qty = q;
         }
     }
+
     List<CartLine> cartLines = new ArrayList<>();
     for (Map.Entry<Integer, Integer> e : cart.entrySet()) {
         Food f = foodMap.get(e.getKey());
@@ -146,19 +178,22 @@
         if (f == null || qtyVal <= 0) {
             continue;
         }
+
         cartLines.add(new CartLine(f, qtyVal));
         totalQty += qtyVal;
-        tempTotal += (long) f.price * qtyVal;
+        tempTotal += f.price * qtyVal;
     }
-    long discountVal = Math.round(tempTotal * (discountPercent / 100.0));
-    long finalTotal = tempTotal - discountVal;
+
+    double discountVal = tempTotal * (discountPercent / 100.0);
+    double finalTotal = tempTotal - discountVal;
 
     NumberFormat nf = NumberFormat.getInstance(new Locale("vi", "VN"));
+    nf.setMaximumFractionDigits(0);
 
     // ===== FILTER foods list server-side =====
     List<Food> foodsView = new ArrayList<>();
     for (Food f : foods) {
-        boolean okCat = "all".equals(cat) || String.valueOf(f.catId).equals(cat);
+        boolean okCat = "all".equals(cat) || (f.categoryID != null && String.valueOf(f.categoryID).equals(cat));
         boolean okQ = q.isEmpty() || f.name.toLowerCase().contains(q.toLowerCase());
         if (okCat && okQ) {
             foodsView.add(f);
@@ -174,7 +209,7 @@
     List<Review> modalReviews = new ArrayList<>();
     if (modalFood != null) {
         for (Review r : reviews) {
-            if (r.foodId == modalFood.id) {
+            if (r.foodID == modalFood.foodID) {
                 modalReviews.add(r);
             }
         }
@@ -194,11 +229,12 @@
     <body class="<%= (request.getParameter("cartOpen") != null) ? "cart-open" : ""%>">
         <div class="container">
             <header>
-                <div style="display:flex;align-items:center"><div class="logo">FPT Food</div></div>
+                <div class="logo">FPT Food</div>
                 <div>
-                    <button class="btn-add" onclick="window.location.href = 'Login.jsp'" style="background:white;color:#333;border:1px solid #ddd">
+                    <a href="login.jsp" class="btn-add"
+                       style="background:white;color:#333;border:1px solid #ddd">
                         <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                    </button>
+                    </a>
                 </div>
             </header>
 
@@ -230,16 +266,12 @@
                     <% } %>
 
                     <% for (Food f : foodsView) {%>
-                    <div class="food-card" onclick="openFood(<%= f.id%>)">
-                        <div class="food-img-container">
-                            <img src="img/che-hat-sen.png" 
-                                 alt="" 
-                                 class="food-img">
-                        </div>
+                    <div class="food-card" onclick="openFood(<%= f.foodID%>)">
+                        <div class="food-img-placeholder"><i class="fas fa-utensils food-icon"></i></div>
                         <div class="card-body">
                             <div>
                                 <div style="font-weight:bold;"><%= f.name%></div>
-                                <div style="font-size:13px;color:#999;"><%= f.catName%></div>
+                                <div style="font-size:13px;color:#999;"><%= f.categoryName%></div>
                             </div>
 
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;">
@@ -247,7 +279,7 @@
 
                                 <!-- Add to cart: POST -->
                                 <form action="AddToCartServlet" method="POST" style="margin:0;" onclick="event.stopPropagation();">
-                                    <input type="hidden" name="foodId" value="<%= f.id%>"/>
+                                    <input type="hidden" name="foodId" value="<%= f.foodID%>"/>
                                     <input type="hidden" name="returnUrl" value="Home.jsp?view=menu&cat=<%= cat%>&q=<%= java.net.URLEncoder.encode(q, "UTF-8")%>&cartOpen=1"/>
                                     <button class="btn-add" type="submit"><i class="fas fa-plus"></i> Thêm</button>
                                 </form>
@@ -280,18 +312,23 @@
                 %>
                 <div class="history-card">
                     <div class="history-header">
-                        <div><b>Đơn hàng #<%= o.id%></b><div style="font-size:12px;color:#888;"><%= o.date%></div></div>
+                        <div>
+                            <b>Đơn hàng #<%= o.orderID%></b>
+                            <div style="font-size:12px;color:#888;"><%= o.createdTime%></div>
+                        </div>
                         <span class="order-status <%= statusClass%>"><%= statusText%></span>
                     </div>
+
                     <div class="history-items">
                         <% for (String it : o.items) {%>
                         <%= it%><br>
                         <% }%>
                     </div>
+
                     <div class="history-footer">
-                        <span>Tổng: <%= nf.format(o.total)%>đ</span>
+                        <span>Tổng: <%= nf.format(o.finalPrice)%>đ</span>
                         <% if (canReview) {%>
-                        <button class="btn-review-sm" type="button" onclick="openReview(<%= o.id%>)">Viết đánh giá</button>
+                        <button class="btn-review-sm" type="button" onclick="openReview(<%= o.orderID%>)">Viết đánh giá</button>
                         <% } %>
                     </div>
                 </div>
@@ -318,7 +355,7 @@
                 <% } %>
 
                 <% for (CartLine line : cartLines) {
-                        long lineTotal = (long) line.food.price * line.qty;
+                        double lineTotal = line.food.price * line.qty;
                 %>
                 <div class="cart-item">
                     <div style="flex:1;">
@@ -327,7 +364,7 @@
 
                         <div class="qty-controls">
                             <form action="UpdateCartServlet" method="POST" style="margin:0;">
-                                <input type="hidden" name="foodId" value="<%= line.food.id%>">
+                                <input type="hidden" name="foodId" value="<%= line.food.foodID%>">
                                 <input type="hidden" name="action" value="dec">
                                 <input type="hidden" name="returnUrl" value="Home.jsp?view=<%= view%>&cat=<%= cat%>&q=<%= java.net.URLEncoder.encode(q, "UTF-8")%>&cartOpen=1">
                                 <button class="btn-qty" type="submit"><i class="fas fa-minus"></i></button>
@@ -336,7 +373,7 @@
                             <span class="qty-text"><%= line.qty%></span>
 
                             <form action="UpdateCartServlet" method="POST" style="margin:0;">
-                                <input type="hidden" name="foodId" value="<%= line.food.id%>">
+                                <input type="hidden" name="foodId" value="<%= line.food.foodID%>">
                                 <input type="hidden" name="action" value="inc">
                                 <input type="hidden" name="returnUrl" value="Home.jsp?view=<%= view%>&cat=<%= cat%>&q=<%= java.net.URLEncoder.encode(q, "UTF-8")%>&cartOpen=1">
                                 <button class="btn-qty" type="submit"><i class="fas fa-plus"></i></button>
@@ -382,7 +419,7 @@
                 </div>
                 <div class="modal-body">
                     <p style="margin-bottom:20px;color:#555;">
-                        <%= (modalFood != null) ? ("Danh mục: " + modalFood.catName) : ""%>
+                        <%= (modalFood != null) ? ("Danh mục: " + modalFood.categoryName) : ""%>
                     </p>
 
                     <h4 style="margin-bottom:10px">Đánh giá từ khách hàng</h4>
@@ -394,9 +431,9 @@
                         for (Review r : modalReviews) {
                     %>
                     <div class="review-item">
-                        <div class="review-user"><%= r.user%></div>
+                        <div class="review-user"><%= r.username%></div>
                         <div class="review-stars">
-                            <% for (int i = 0; i < r.rate; i++) { %><i class="fas fa-star"></i><% }%>
+                            <% for (int i = 0; i < r.rating; i++) { %><i class="fas fa-star"></i><% }%>
                         </div>
                         <div class="review-text"><%= r.comment%></div>
                     </div>
@@ -499,3 +536,5 @@
 
     </body>
 </html>
+
+
