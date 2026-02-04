@@ -1,11 +1,6 @@
-<%-- 
-    Document   : Login
-    Created on : Jan 20, 2026, 10:57:37 AM
-    Author     : AN
---%>
-
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
-<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%-- Document : Login Created on : Jan 20, 2026, 10:57:37 AM Author : AN --%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%> <%@taglib
+uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <!doctype html>
 <html lang="vi">
   <head>
@@ -16,7 +11,7 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link rel="stylesheet" href="./css/login.css"/>
+    <link rel="stylesheet" href="./css/login.css" />
   </head>
   <body>
     <div class="login-card">
@@ -26,13 +21,14 @@
 
       <h2>FPT Food</h2>
       <p class="subtitle">Đăng nhập để đặt món</p>
-      
-      <form action="MainController?action=login" method="Post">
+
+      <form action="MainController" method="post">
+        <input type="hidden" name="action" value="login" />
+
         <div class="form-group">
           <label>Tên đăng nhập</label>
           <input
             type="text"
-            id="username"
             name="username"
             placeholder="Nhập tên đăng nhập"
             required
@@ -43,7 +39,6 @@
           <label>Mật khẩu</label>
           <input
             type="password"
-            id="password"
             name="password"
             placeholder="Nhập mật khẩu"
             required
@@ -51,12 +46,20 @@
         </div>
 
         <button type="submit" class="btn btn-login">Đăng nhập</button>
+      </form>
 
-        <button
-          type="button"
-          class="btn btn-register"
-          onclick="window.location.href = 'Register.jsp'"
-        >
+      <!-- FORM RIÊNG cho Register -->
+      <form action="MainController" method="get">
+        <input type="hidden" name="action" value="register" />
+        <button type="submit" class="btn btn-register">
+          Đăng ký tài khoản
+        </button>
+      </form>
+
+      <!-- FORM RIÊNG cho Register -->
+      <form action="MainController" method="get">
+        <input type="hidden" name="action" value="register" />
+        <button type="submit" class="btn btn-register">
           Đăng ký tài khoản
         </button>
       </form>
