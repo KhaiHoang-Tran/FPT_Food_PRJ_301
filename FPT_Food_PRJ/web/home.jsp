@@ -231,9 +231,9 @@
             <header>
                 <div class="logo">FPT Food</div>
                 <div>
-                    <a href="login.jsp" class="btn-add"
+                    <a href="logoutController"class="btn-add"
                        style="background:white;color:#333;border:1px solid #ddd">
-                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                        <i class="fas fa-sign-in-alt"></i> Đăng xuất
                     </a>
                 </div>
             </header>

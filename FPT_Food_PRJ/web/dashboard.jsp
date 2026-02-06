@@ -64,7 +64,7 @@
             <h1>FPT Food - Dashboard</h1>
             <p>Xin chào, Quản lý</p>
         </div>
-        <a href="LogoutServlet" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+        <a href="logoutController" class="btn-logout"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
     </header>
 
     <div class="container">

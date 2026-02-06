@@ -25,7 +25,6 @@ public class UserDAO extends DBContext {
             ps.setString(1, username);
             ps.setString(2, password);
             ResultSet rs = ps.executeQuery();
-
             if (rs.next()) {
                 return new User(
                         rs.getInt("userID"),
