@@ -26,7 +26,7 @@ import lombok.ToString;
 public class OrderItem {
     private Integer orderItemID;
     private Integer orderID; 
-    private Integer foodID;  
+    private String foodName;  
     private Integer quantity;
     private Double price;
 }

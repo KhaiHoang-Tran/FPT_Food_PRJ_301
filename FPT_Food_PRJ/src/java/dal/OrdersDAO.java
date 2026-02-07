@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import model.OrderItem;
 import model.Orders;
 
 /**
@@ -39,6 +40,10 @@ public class OrdersDAO extends DBContext {
                 if (timestamp != null) {
                     createdTime = timestamp.toLocalDateTime();
                 }
+                // lay cac item
+                ArrayList<OrderItem> listItem = new ArrayList<>();
+                OrderItemDAO oiDAO = new OrderItemDAO();
+                listItem.addAll(oiDAO.getOrderItemByOrderID(orderID));
                 Orders o = Orders.builder()
                         .orderID(orderID)
                         .tableID(tableID)
@@ -46,7 +51,8 @@ public class OrdersDAO extends DBContext {
                         .status(status)
                         .totalPrice(totalPrice)
                         .finalPrice(finalPrice)
-                        .createdTime(createdTime).build();
+                        .createdTime(createdTime)
+                        .orderItem(listItem).build();
                 list.add(o);
             }
             return list;
@@ -54,5 +60,22 @@ public class OrdersDAO extends DBContext {
             Logger.getLogger(OrdersDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    public int updateStatusOrder(int orderID, String curr_status) {
+        connection = getConnection();
+        String sql = "UPDATE [dbo].[Orders]\n"
+                + "   SET \n"
+                + "      [status] = ?\n"
+                + " WHERE orderID = ?";
+        try {
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, curr_status);
+            statement.setInt(2, orderID);
+            return statement.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
+        }
+        return 0;
     }
 }
