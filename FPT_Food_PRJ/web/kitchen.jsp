@@ -96,8 +96,6 @@
     o2.items.add(new OrderItem("Burger", 2));
     orders.add(o2);
     
-    String selectedFoodIdStr = request.getParameter("foodId");
-    int selectedFoodId = (selectedFoodIdStr != null) ? Integer.parseInt(selectedFoodIdStr) : -1;
 %>
 <!-- kiểm tra đăng nhập -->
 <c:if test="${sessionScope.user == null}">
@@ -125,25 +123,25 @@
         <div class="container">
             <div class="main-nav">
                 <a href="orderController" style="text-decoration: none; color: black" class="nav-pill <c:if test="${requestScope.activeSection == 'orders'}">active</c:if>" onclick="switchSection('orders', this)">
-                    <i class="fas fa-fire"></i> Đơn hàng
-                </a>
-                <button class="nav-pill <c:if test="${requestScope.activeSection == 'recipes'}">active</c:if>" onclick="switchSection('recipes', this)">
-                    <i class="fas fa-book-open"></i> Công thức
-                </button>
-                <a href="ingredientController" style="text-decoration: none; color: black" class="nav-pill <c:if test="${requestScope.activeSection == 'inventory'}">active</c:if>" onclick="switchSection('inventory', this)">
-                    <i class="fas fa-boxes"></i> Kiểm tra kho
-                </a>
-            </div>
-
-            <div id="section-orders" class="section-content <c:if test="${requestScope.activeSection == 'orders'}">active</c:if>">
-
-                <div class="tabs-container">
-                    <button class="sub-tab-btn active" onclick="filterOrders('pending', this)">Chờ xử lý</button>
-                    <button class="sub-tab-btn" onclick="filterOrders('cooking', this)">Đang nấu</button>
-                    <button class="sub-tab-btn" onclick="filterOrders('all', this)">Tất cả</button>
+                        <i class="fas fa-fire"></i> Đơn hàng
+                    </a>
+                    <a href="recipesController" style="text-decoration: none; color: black" class="nav-pill <c:if test="${requestScope.activeSection == 'recipes'}">active</c:if>" onclick="switchSection('recipes', this)">
+                        <i class="fas fa-book-open"></i> Công thức
+                    </a>
+                    <a href="ingredientController" style="text-decoration: none; color: black" class="nav-pill <c:if test="${requestScope.activeSection == 'inventory'}">active</c:if>" onclick="switchSection('inventory', this)">
+                        <i class="fas fa-boxes"></i> Kiểm tra kho
+                    </a>
                 </div>
 
-                <div class="order-grid">
+                <div id="section-orders" class="section-content <c:if test="${requestScope.activeSection == 'orders'}">active</c:if>">
+
+                    <div class="tabs-container">
+                        <button class="sub-tab-btn active" onclick="filterOrders('pending', this)">Chờ xử lý</button>
+                        <button class="sub-tab-btn" onclick="filterOrders('cooking', this)">Đang nấu</button>
+                        <button class="sub-tab-btn" onclick="filterOrders('all', this)">Tất cả</button>
+                    </div>
+
+                    <div class="order-grid">
                     <c:if test="${not empty requestScope.mesg}">
                         <span style="color: red; font:bolders ">${requestScope.mesg}</span>
                     </c:if>
@@ -184,22 +182,28 @@
             </div>
 
             <div id="section-recipes" class="section-content <c:if test="${requestScope.activeSection == 'recipes'}">active</c:if>">
-                <div class="recipe-layout">
-                    <div class="sidebar">
-                        <h4>Menu món ăn</h4>
-                        <% for (Food f : foods) {%>
-                        <div class="food-item <%= f.id == selectedFoodId ? "active" : ""%>" 
-                             onclick="window.location.href = '?section=recipes&foodId=<%= f.id%>'">
-                            <span><%= f.name%></span>
-                            <form action="UpdateFoodStatusServlet" method="POST" style="margin:0" onclick="event.stopPropagation()">
-                                <input type="hidden" name="foodId" value="<%= f.id%>">
-                                <label class="toggle-switch">
-                                    <input type="checkbox" <%= f.status ? "checked" : ""%> onchange="this.form.submit()">
-                                    <span class="slider"></span>
-                                </label>
-                            </form>
-                        </div>
-                        <% } %>
+                    <div class="recipe-layout">
+                        <div class="sidebar">
+                            <h4>Menu món ăn</h4>
+                        <c:if test="${not empty requestScope.mesg}">
+                            <span>${requestScope.mesg}</span>
+                        </c:if>
+                        <c:if test="${empty requestScope.mesg}">
+                            <c:forEach items="${requestScope.listFood}" var="f">
+                                <div class="food-item <c:if test="${f.foodID == selectedFoodId}">active</c:if> 
+                                     onclick="window.location.href = '?section=recipes&foodId=${f.foodID}'">
+                                    <span>${f.name}</span>
+                                    <form action="recipesController?action=update" method="POST" style="margin:0" onclick="event.stopPropagation()">
+                                        <input type="hidden" name="foodId" value="${f.foodID}">
+                                        <input type="hidden" name="status" value="${f.status}">
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" <c:if test="${f.status == 'available'}">checked</c:if>  onchange="this.form.submit()">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </form>
+                                </div>
+                            </c:forEach>
+                        </c:if>   
                     </div>
 
                     <div class="content">
