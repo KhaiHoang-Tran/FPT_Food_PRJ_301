@@ -5,6 +5,7 @@
 package model;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,4 +34,5 @@ public class Orders {
     private Double totalPrice;
     private Double finalPrice;
     private LocalDateTime createdTime;
+    private ArrayList<OrderItem> orderItem;
 }

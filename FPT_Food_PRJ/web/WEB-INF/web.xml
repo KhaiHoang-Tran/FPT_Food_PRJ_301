@@ -20,6 +20,10 @@
         <servlet-name>orderController</servlet-name>
         <servlet-class>controller.orderController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>recipesController</servlet-name>
+        <servlet-class>controller.recipesController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>MainController</servlet-name>
         <url-pattern>/MainController</url-pattern>
@@ -44,6 +48,10 @@
     <servlet-mapping>
         <servlet-name>orderController</servlet-name>
         <url-pattern>/orderController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>recipesController</servlet-name>
+        <url-pattern>/recipesController</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
