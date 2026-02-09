@@ -27,7 +27,9 @@ public class Food {
     private Integer foodID;
     private String name;
     private Double price;
-    private Integer categoryID; 
+    private Integer categoryID;
     private String status;
-    private String url;
+
+    // field dùng để hiển thị (JOIN từ Category)
+    private String categoryName;
 }

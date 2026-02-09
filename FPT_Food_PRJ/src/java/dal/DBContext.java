@@ -15,9 +15,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBContext {
+
     protected Connection connection;
     protected PreparedStatement statement;
     protected ResultSet resultSet;
+
     /**
      * get an connection
      *
@@ -29,7 +31,7 @@ public class DBContext {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             String url = "jdbc:sqlserver://localhost:1433;databaseName=FPT_Food_PRJ";
             // thay user
-            String user = "anvdse193929";
+            String user = "sa";
             // thay password
             String password = "12345";
             connection = DriverManager.getConnection(url, user, password);
@@ -46,4 +48,3 @@ public class DBContext {
         System.out.println(test.connection);
     }
 }
-

@@ -6,16 +6,20 @@ package controller;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Map;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author AN
+ * @author Nitro 5 Tiger
  */
-public class MainController extends HttpServlet {
+@WebServlet(name = "updateCart", urlPatterns = {"/updateCart"})
+public class updateCart extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -28,29 +32,33 @@ public class MainController extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
+        HttpSession session = request.getSession();
+        Map<Integer, Integer> cart =
+                (Map<Integer, Integer>) session.getAttribute("cart");
 
-        String action = request.getParameter("action");
-        String method = request.getMethod();
-        String url = "";
-        switch (action) {
-            case "login":
-                url = "loginController";
-                break;
-            case "register":
-                if ("GET".equalsIgnoreCase(method)) {
-                    url = "register.jsp";        // mở form
-                } else {
-                    url = "registerController";  // xử lý đăng ký
-                }
-                break;
-
-            default:
-                url = "login.jsp";
+        if (cart == null) {
+            response.sendRedirect("homeController");
+            return;
         }
-        request.getRequestDispatcher(url).forward(request, response);
 
+        int foodId = Integer.parseInt(request.getParameter("foodId"));
+        String action = request.getParameter("action");
+
+        int qty = cart.getOrDefault(foodId, 0);
+
+        if ("plus".equals(action)) {
+            cart.put(foodId, qty + 1);
+        } else if ("minus".equals(action)) {
+            if (qty <= 1) {
+                cart.remove(foodId);
+            } else {
+                cart.put(foodId, qty - 1);
+            }
+        }
+
+        session.setAttribute("cart", cart);
+        response.sendRedirect("homeController");
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
