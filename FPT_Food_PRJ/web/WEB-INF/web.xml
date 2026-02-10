@@ -8,6 +8,22 @@
         <servlet-name>loginController</servlet-name>
         <servlet-class>controller.loginController</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>logoutController</servlet-name>
+        <servlet-class>controller.logoutController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>ingredientController</servlet-name>
+        <servlet-class>controller.ingredientController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>orderController</servlet-name>
+        <servlet-class>controller.orderController</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>recipesController</servlet-name>
+        <servlet-class>controller.recipesController</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>MainController</servlet-name>
         <url-pattern>/MainController</url-pattern>
@@ -20,6 +36,22 @@
     <servlet-mapping>
         <servlet-name>loginController</servlet-name>
         <url-pattern>/loginController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>logoutController</servlet-name>
+        <url-pattern>/logoutController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ingredientController</servlet-name>
+        <url-pattern>/ingredientController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>orderController</servlet-name>
+        <url-pattern>/orderController</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>recipesController</servlet-name>
+        <url-pattern>/recipesController</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>
