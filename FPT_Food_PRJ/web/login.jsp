@@ -1,6 +1,7 @@
 <%-- Document : Login Created on : Jan 20, 2026, 10:57:37 AM Author : AN --%>
-<%@page contentType="text/html" pageEncoding="UTF-8"%> <%@taglib
-    uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
     <!doctype html>
     <html lang="vi">
         <head>

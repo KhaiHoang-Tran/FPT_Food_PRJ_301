@@ -4,18 +4,22 @@
  */
 package controller;
 
+import dal.UserDAO;
 import java.io.IOException;
 import java.io.PrintWriter;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import model.User;
 
 /**
  *
- * @author AN
+ * @author Nitro 5 Tiger
  */
-public class MainController extends HttpServlet {
+@WebServlet(name = "registerController", urlPatterns = {"/registerController"})
+public class registerController extends HttpServlet {
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -28,28 +32,43 @@ public class MainController extends HttpServlet {
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setCharacterEncoding("UTF-8");
         response.setContentType("text/html;charset=UTF-8");
+        request.setCharacterEncoding("UTF-8");
 
-        String action = request.getParameter("action");
-        String method = request.getMethod();
         String url = "";
-        switch (action) {
-            case "login":
-                url = "loginController";
-                break;
-            case "register":
-                if ("GET".equalsIgnoreCase(method)) {
-                    url = "register.jsp";        // mở form
-                } else {
-                    url = "registerController";  // xử lý đăng ký
-                }
-                break;
+        String message = null;
+        UserDAO udao = new UserDAO();
 
-            default:
-                url = "login.jsp";
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String fullname = request.getParameter("fullname");
+        String phone = request.getParameter("phone");
+        
+        //check trùng
+         if (udao.isUsernameExist(username)) {
+            message = "Username đã tồn tại!";
+        } else if (udao.isPhoneExist(phone)) {
+            message = "Số điện thoại đã được sử dụng!";
         }
-        request.getRequestDispatcher(url).forward(request, response);
+
+        if (message != null) {
+            request.setAttribute("message", message);
+            request.getRequestDispatcher("register.jsp").forward(request, response);
+            return;
+        }
+        
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(password);
+        user.setFullname(fullname);
+        user.setPhone(phone);
+        user.setRole("user");
+        user.setStatus("active");
+
+        udao.register(user);
+
+        //thành công thì về login
+        response.sendRedirect("login.jsp");
 
     }
 
