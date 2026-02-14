@@ -4,7 +4,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.HashMap" %>
 <%@ page import="java.text.DecimalFormat" %>
-
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     // --- PHẦN 1: GIẢ LẬP DỮ LIỆU (MOCK DATA) ---
     DecimalFormat formatter = new DecimalFormat("#,###"); // Định dạng tiền tệ
@@ -48,7 +48,9 @@
     userList.add(new HashMap<String, Object>() {{ put("id", 2); put("username", "nhanvien1"); put("role", "worker"); }});
     userList.add(new HashMap<String, Object>() {{ put("id", 3); put("username", "nhanvien2"); put("role", "worker"); }});
 %>
-
+<c:if test="${sessionScope.user == null}">
+    <c:redirect url="login.jsp"></c:redirect>
+</c:if>
 <!doctype html>
 <html lang="vi">
 <head>
