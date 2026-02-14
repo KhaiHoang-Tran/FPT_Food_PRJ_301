@@ -41,17 +41,23 @@ public class recipesController extends HttpServlet {
         String action = request.getParameter("action");
         action = action == null ? "" : request.getParameter("action");
         switch (action) {
-            case "update":
+            case "updateStatusFood":
                 updateStatusFood(request, response);
                 displayRecipesDetail(request, response);
                 break;
-            case "view":
+            case "viewRecipesDetail":
                 displayRecipesDetail(request, response);
                 break;
-            case "add":
+            case "addRecipe":
                 addRecipes(request, response);
                 break;
-                
+            case "deletetRecipe":
+                deletetRecipes(request, response);
+                break;
+           case "updateRecipe":
+                updateRecipe(request, response);
+                break;
+
         }
         displayMenu(request, response);
         request.getRequestDispatcher("kitchen.jsp").forward(request, response);
@@ -163,9 +169,49 @@ public class recipesController extends HttpServlet {
                 .amountNeeded(amountNeeded).build();
         RecipeDAO rDAO = new RecipeDAO();
         int check = rDAO.InsertNewRecipe(r);
-        if(check > 0){
-            System.out.println("So dong da thay doi la: "+ check);
-        }else{
+        if (check > 0) {
+            System.out.println("So dong da thay doi la: " + check);
+        } else {
+            System.out.println("Error");
+        }
+        displayRecipesDetail(request, response);
+    }
+
+    private void deletetRecipes(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        int foodID = Integer.parseInt(request.getParameter("foodId"));
+        int ingId = Integer.parseInt(request.getParameter("ingId"));
+        Recipe r = Recipe.builder()
+                .foodID(foodID)
+                .ingredientID(ingId).build();
+        RecipeDAO rDAO = new RecipeDAO();
+        int check = rDAO.delete(r);
+        if (check > 0) {
+            System.out.println("So dong da thay doi la: " + check);
+        } else {
+            System.out.println("Error");
+        }
+        displayRecipesDetail(request, response);
+    }
+
+    private void updateRecipe(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException {
+        request.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("text/html;charset=UTF-8");
+        int foodID = Integer.parseInt(request.getParameter("foodId"));
+        int ingId = Integer.parseInt(request.getParameter("ingId"));
+        Double amountNeeded = Double.parseDouble(request.getParameter("amountNeeded"));
+        Recipe r = Recipe.builder()
+                .foodID(foodID)
+                .ingredientID(ingId)
+                .amountNeeded(amountNeeded).build();
+        RecipeDAO rDAO = new RecipeDAO();
+        int check = rDAO.update(r);
+        if (check > 0) {
+            System.out.println("So dong da thay doi la: " + check);
+        } else {
             System.out.println("Error");
         }
         displayRecipesDetail(request, response);

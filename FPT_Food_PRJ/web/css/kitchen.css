@@ -279,3 +279,20 @@ th, td {
     display: inline-block;
     width: 48%;
 }
+.btn-icon {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    margin: 0 5px;
+}
+.btn-icon.edit {
+    color: #2196F3;
+}
+.btn-icon.delete {
+    color: #F44336;
+}
+.btn-icon:hover {
+    opacity: 0.7;
+}

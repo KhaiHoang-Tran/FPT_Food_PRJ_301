@@ -1,110 +1,13 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
-<%!
-    // --- 1. MOCK DATA (MODEL) ---
-    public static class Ingredient {
-
-        public int id;
-        public String name;
-        public String unit;
-        public double qty;
-        public double min;
-
-        public Ingredient(int id, String n, String u, double q, double m) {
-            this.id = id;
-            name = n;
-            unit = u;
-            qty = q;
-            min = m;
-        }
-    }
-
-    public static class RecipeItem {
-
-        public int ingId;
-        public double qtyNeeded;
-
-        public RecipeItem(int id, double q) {
-            ingId = id;
-            qtyNeeded = q;
-        }
-    }
-
-    public static class Food {
-
-        public int id;
-        public String name;
-        public boolean status;
-        public List<RecipeItem> recipe = new ArrayList<>();
-
-        public Food(int id, String n, boolean s) {
-            this.id = id;
-            name = n;
-            status = s;
-        }
-    }
-
-    public static class OrderItem {
-
-        public String name;
-        public int qty;
-
-        public OrderItem(String n, int q) {
-            name = n;
-            qty = q;
-        }
-    }
-
-    public static class Order {
-
-        public int id;
-        public String table;
-        public String time;
-        public String status;
-        public List<OrderItem> items = new ArrayList<>();
-
-        public Order(int id, String t, String time, String st) {
-            this.id = id;
-            table = t;
-            this.time = time;
-            status = st;
-        }
-    }
-%>
-
-<%
-    // --- 2. KHỞI TẠO DỮ LIỆU ---
-    List<Ingredient> inventory = new ArrayList<>();
-    inventory.add(new Ingredient(1, "Bột mì", "kg", 50.5, 10));
-    inventory.add(new Ingredient(2, "Phô mai", "kg", 0.5, 5));
-    inventory.add(new Ingredient(3, "Thịt bò", "kg", 15.0, 5));
-
-    List<Food> foods = new ArrayList<>();
-    Food f1 = new Food(1, "Pizza Hải Sản", true);
-    f1.recipe.add(new RecipeItem(1, 1));
-    f1.recipe.add(new RecipeItem(2, 0.15));
-    foods.add(f1);
-    foods.add(new Food(2, "Burger Bò", true));
-
-    List<Order> orders = new ArrayList<>();
-    Order o1 = new Order(101, "Bàn 1", "10:30", "pending");
-    o1.items.add(new OrderItem("Pizza", 1));
-    orders.add(o1);
-
-    Order o2 = new Order(102, "Bàn 5", "10:35", "paid"); // Thêm 1 đơn đang nấu để test filter
-    o2.items.add(new OrderItem("Burger", 2));
-    orders.add(o2);
-
-%>
-<!-- kiểm tra đăng nhập -->
 <c:if test="${sessionScope.user == null}">
     <c:redirect url="login.jsp"></c:redirect>
 </c:if>
-<!-- load lần đầu -->
 <c:if test="${sessionScope.listOrders == null}">
     <c:redirect url="orderController"></c:redirect>
 </c:if>
+
 <!doctype html>
 <html lang="vi">
     <head>
@@ -190,10 +93,10 @@
                         </c:if>
                         <c:if test="${empty requestScope.mesg}">
                             <c:forEach items="${requestScope.listFood}" var="f">
-                                <div class="food-item <c:if test="${not empty selectedFood and f.foodID == selectedFood.foodID}">active</c:if>
-                                     "onclick="window.location.href = 'recipesController?action=view&foodId=${f.foodID}'">
+                                <div class="food-item <c:if test="${not empty selectedFood and f.foodID == selectedFood.foodID}">active</c:if>"
+                                     onclick="window.location.href = 'recipesController?action=viewRecipesDetail&foodId=${f.foodID}'">
                                     <span>${f.name}</span>
-                                    <form action="recipesController?action=update" method="POST" style="margin:0" onclick="event.stopPropagation()">
+                                    <form action="recipesController?action=updateStatusFood" method="POST" style="margin:0" onclick="event.stopPropagation()">
                                         <input type="hidden" name="foodId" value="${f.foodID}">
                                         <input type="hidden" name="status" value="${f.status}">
                                         <label class="toggle-switch">
@@ -213,7 +116,15 @@
                                 <button onclick="openModal()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">+ Thêm nguyên liệu</button>
                             </div>
                             <table>
-                                <thead><tr><th>Nguyên liệu</th><th>Cần dùng</th><th>Tồn kho</th><th>Đơn vị</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th>Nguyên liệu</th>
+                                        <th>Cần dùng</th>
+                                        <th>Tồn kho</th>
+                                        <th>Đơn vị</th>
+                                        <th style="width: 100px; text-align: center;">Thao tác</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     <c:forEach items="${requestScope.listRecipe}" var="r">
                                         <c:if test="${r.foodID == selectedFood.foodID}">
@@ -222,13 +133,26 @@
                                                     <tr>
                                                         <td>
                                                             <c:if test="${i.name != null}">${i.name}</c:if>
-                                                        </td>
-                                                        <td>${r.amountNeeded}</td>
+                                                            </td>
+                                                            <td>${r.amountNeeded}</td>
                                                         <td style="color: ${i.quantityInStock > r.amountNeeded ? 'green' : 'red'}">
                                                             <c:if test="${i.quantityInStock != null}">${i.quantityInStock}</c:if>
-                                                        </td>
-                                                        <td>
+                                                            </td>
+                                                            <td>
                                                             <c:if test="${i.unit != null}">${i.unit}</c:if>
+                                                            </td>
+
+                                                            <td style="text-align: center;">
+                                                                <button class="btn-icon edit" title="Cập nhật lượng dùng"
+                                                                        onclick="openUpdateModal('${selectedFood.foodID}', '${i.ingredientID}', '${r.amountNeeded}', '${i.name}')">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+
+                                                            <a href="recipesController?action=deletetRecipe&foodId=${selectedFood.foodID}&ingId=${i.ingredientID}" 
+                                                               class="btn-icon delete" title="Xóa khỏi công thức"
+                                                               onclick="return confirm('Bạn chắc chắn muốn xóa nguyên liệu ${i.name} khỏi công thức này?');">
+                                                                <i class="fas fa-trash"></i>
+                                                            </a>
                                                         </td>
                                                     </tr>
                                                 </c:if>
@@ -244,6 +168,7 @@
                     </div>
                 </div>
             </div>
+
             <div id="section-inventory" class="section-content <c:if test="${activeSection == 'inventory'}">active</c:if>">
                     <h3>Tình trạng kho</h3>
                 <c:if test="${not empty requestScope.mesg}">
@@ -263,13 +188,13 @@
         <div class="modal" id="ingredientModal">
             <div class="modal-content">
                 <h3 style="margin-top:0; color:var(--primary)">Thêm nguyên liệu</h3>
-                <form action="recipesController?action=add" method="POST">
+                <form action="recipesController?action=addRecipe" method="POST">
                     <input type="hidden" name="foodId" value="${selectedFood.foodID}">
                     <div class="form-group">
                         <label>Chọn nguyên liệu</label>
                         <select name="ingId" class="form-control">
                             <c:forEach items="${requestScope.listIngredient}" var="i">
-                            <option value="${i.ingredientID}">${i.name}</option> 
+                                <option value="${i.ingredientID}">${i.name}</option> 
                             </c:forEach>
                         </select>
                     </div>
@@ -277,6 +202,28 @@
                     <div class="modal-footer">
                         <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
                         <button type="submit" class="btn-confirm">Lưu lại</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="modal" id="updateIngredientModal">
+            <div class="modal-content">
+                <h3 style="margin-top:0; color:var(--primary)">Cập nhật lượng dùng</h3>
+                <p id="updateIngNameDisplay" style="color: #666; font-style: italic;"></p>
+
+                <form action="recipesController?action=updateRecipe" method="POST">
+                    <input type="hidden" name="foodId" id="updateFoodId">
+                    <input type="hidden" name="ingId" id="updateIngId">
+
+                    <div class="form-group">
+                        <label>Số lượng cần mới</label>
+                        <input type="number" name="amountNeeded" id="updateAmountNeeded" step="0.01" class="form-control" required>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn-cancel" onclick="closeUpdateModal()">Hủy</button>
+                        <button type="submit" class="btn-confirm">Cập nhật</button>
                     </div>
                 </form>
             </div>
@@ -315,16 +262,38 @@
                 document.getElementById('empty-msg').style.display = hasItem ? 'none' : 'block';
             }
 
-            // 3. JS EVENT: POPUP
+            // 3. JS EVENT: POPUP THÊM (Cũ)
             function openModal() {
                 document.getElementById('ingredientModal').classList.add('active');
             }
             function closeModal() {
                 document.getElementById('ingredientModal').classList.remove('active');
             }
+
+            // 4. MỚI: JS EVENT CHO POPUP CẬP NHẬT
+            function openUpdateModal(foodId, ingId, currentAmount, ingName) {
+                // Gán giá trị vào các input trong form modal
+                document.getElementById('updateFoodId').value = foodId;
+                document.getElementById('updateIngId').value = ingId;
+                document.getElementById('updateAmountNeeded').value = currentAmount;
+                document.getElementById('updateIngNameDisplay').innerText = "Nguyên liệu: " + ingName;
+
+                // Hiển thị modal
+                document.getElementById('updateIngredientModal').classList.add('active');
+            }
+
+            function closeUpdateModal() {
+                document.getElementById('updateIngredientModal').classList.remove('active');
+            }
+
+            // Đóng modal khi click ra ngoài vùng content
             window.onclick = function (event) {
-                if (event.target == document.getElementById('ingredientModal'))
+                if (event.target == document.getElementById('ingredientModal')) {
                     closeModal();
+                }
+                if (event.target == document.getElementById('updateIngredientModal')) {
+                    closeUpdateModal();
+                }
             }
 
             // Mặc định chạy lọc Pending khi mới vào trang

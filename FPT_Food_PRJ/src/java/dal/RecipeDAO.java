@@ -64,4 +64,39 @@ public class RecipeDAO extends DBContext {
         return resultSet;
     }
 
+    public int delete(Recipe r) {
+        int resultSet = 0;
+        connection = getConnection();
+        String sql = "DELETE FROM [dbo].[Recipe]\n"
+                + "      WHERE foodID = ? and ingredientID = ?";
+        try {
+            statement = connection.prepareStatement(sql);
+            statement.setInt(1, r.getFoodID());
+            statement.setInt(2, r.getIngredientID());
+            resultSet = statement.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
+        }
+        return resultSet;
+    }
+
+    public int update(Recipe r) {
+        int resultSet = 0;
+        connection = getConnection();
+        String sql = "UPDATE [dbo].[Recipe]\n"
+                + "   SET \n"
+                + "      [amountNeeded] = ?\n"
+                + " WHERE foodID = ? and ingredientID = ?";
+        try {
+            statement = connection.prepareStatement(sql);
+            statement.setDouble(1, r.getAmountNeeded());
+            statement.setInt(2, r.getFoodID());
+            statement.setInt(3, r.getIngredientID());
+            resultSet = statement.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println(ex.toString());
+        }
+        return resultSet;
+    }
+
 }
