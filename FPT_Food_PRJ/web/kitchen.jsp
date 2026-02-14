@@ -95,7 +95,7 @@
     Order o2 = new Order(102, "Bàn 5", "10:35", "paid"); // Thêm 1 đơn đang nấu để test filter
     o2.items.add(new OrderItem("Burger", 2));
     orders.add(o2);
-    
+
 %>
 <!-- kiểm tra đăng nhập -->
 <c:if test="${sessionScope.user == null}">
@@ -190,59 +190,57 @@
                         </c:if>
                         <c:if test="${empty requestScope.mesg}">
                             <c:forEach items="${requestScope.listFood}" var="f">
-                                <div class="food-item <c:if test="${f.foodID == selectedFoodId}">active</c:if> 
-                                     onclick="window.location.href = '?section=recipes&foodId=${f.foodID}'">
+                                <div class="food-item <c:if test="${not empty selectedFood and f.foodID == selectedFood.foodID}">active</c:if>
+                                     "onclick="window.location.href = 'recipesController?action=view&foodId=${f.foodID}'">
                                     <span>${f.name}</span>
                                     <form action="recipesController?action=update" method="POST" style="margin:0" onclick="event.stopPropagation()">
                                         <input type="hidden" name="foodId" value="${f.foodID}">
                                         <input type="hidden" name="status" value="${f.status}">
                                         <label class="toggle-switch">
                                             <input type="checkbox" <c:if test="${f.status == 'available'}">checked</c:if>  onchange="this.form.submit()">
-                                            <span class="slider"></span>
-                                        </label>
-                                    </form>
-                                </div>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </form>
+                                    </div>
                             </c:forEach>
                         </c:if>   
                     </div>
 
                     <div class="content">
-                        <%
-                            Food selectedFood = null;
-                            for (Food f : foods) {
-                                if (f.id == selectedFoodId) {
-                                    selectedFood = f;
-                                }
-                            }
-                            if (selectedFood != null) {
-                        %>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h2 style="color:var(--primary); margin:0;"><%= selectedFood.name%></h2>
-                            <button onclick="openModal()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">+ Thêm nguyên liệu</button>
-                        </div>
-                        <table>
-                            <thead><tr><th>Nguyên liệu</th><th>Cần dùng</th><th>Tồn kho</th><th>Đơn vị</th></tr></thead>
-                            <tbody>
-                                <% for (RecipeItem rItem : selectedFood.recipe) {
-                                        Ingredient stock = null;
-                                        for (Ingredient i : inventory) {
-                                            if (i.id == rItem.ingId) {
-                                                stock = i;
-                                            }
-                                        }
-                                %>
-                                <tr>
-                                    <td><%= stock != null ? stock.name : "???"%></td>
-                                    <td><%= rItem.qtyNeeded%></td>
-                                    <td style="color:<%= (stock != null && stock.qty < rItem.qtyNeeded) ? "red" : "green"%>"><%= stock != null ? stock.qty : 0%></td>
-                                    <td><%= stock != null ? stock.unit : ""%></td>
-                                </tr>
-                                <% } %>
-                            </tbody>
-                        </table>
-                        <% } else { %>
-                        <p style="text-align:center; color:#999; margin-top:50px;">Chọn một món ăn bên trái để xem</p>
-                        <% }%>
+                        <c:if test="${not empty requestScope.selectedFood}">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <h2 style="color:var(--primary); margin:0;">${selectedFood.name}</h2>
+                                <button onclick="openModal()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">+ Thêm nguyên liệu</button>
+                            </div>
+                            <table>
+                                <thead><tr><th>Nguyên liệu</th><th>Cần dùng</th><th>Tồn kho</th><th>Đơn vị</th></tr></thead>
+                                <tbody>
+                                    <c:forEach items="${requestScope.listRecipe}" var="r">
+                                        <c:if test="${r.foodID == selectedFood.foodID}">
+                                            <c:forEach items="${listIngredient}" var="i">
+                                                <c:if test="${r.ingredientID == i.ingredientID}">
+                                                    <tr>
+                                                        <td>
+                                                            <c:if test="${i.name != null}">${i.name}</c:if>
+                                                        </td>
+                                                        <td>${r.amountNeeded}</td>
+                                                        <td style="color: ${i.quantityInStock > r.amountNeeded ? 'green' : 'red'}">
+                                                            <c:if test="${i.quantityInStock != null}">${i.quantityInStock}</c:if>
+                                                        </td>
+                                                        <td>
+                                                            <c:if test="${i.unit != null}">${i.unit}</c:if>
+                                                        </td>
+                                                    </tr>
+                                                </c:if>
+                                            </c:forEach>
+                                        </c:if>
+                                    </c:forEach>
+                                </tbody>
+                            </table>
+                        </c:if>
+                        <c:if test="${empty requestScope.selectedFood}">
+                            <p style="text-align:center; color:#999; margin-top:50px;">Chọn một món ăn bên trái để xem</p>
+                        </c:if>
                     </div>
                 </div>
             </div>
@@ -265,15 +263,17 @@
         <div class="modal" id="ingredientModal">
             <div class="modal-content">
                 <h3 style="margin-top:0; color:var(--primary)">Thêm nguyên liệu</h3>
-                <form action="AddIngredientServlet" method="POST">
-                    <input type="hidden" name="foodId" value="<%= selectedFoodId%>">
+                <form action="recipesController?action=add" method="POST">
+                    <input type="hidden" name="foodId" value="${selectedFood.foodID}">
                     <div class="form-group">
                         <label>Chọn nguyên liệu</label>
                         <select name="ingId" class="form-control">
-                            <% for (Ingredient i : inventory) {%> <option value="<%= i.id%>"><%= i.name%></option> <% }%>
+                            <c:forEach items="${requestScope.listIngredient}" var="i">
+                            <option value="${i.ingredientID}">${i.name}</option> 
+                            </c:forEach>
                         </select>
                     </div>
-                    <div class="form-group"><label>Số lượng cần</label><input type="number" name="qty" step="0.1" class="form-control" required></div>
+                    <div class="form-group"><label>Số lượng cần</label><input type="number" name="amountNeeded" step="0.1" class="form-control" required></div>
                     <div class="modal-footer">
                         <button type="button" class="btn-cancel" onclick="closeModal()">Hủy</button>
                         <button type="submit" class="btn-confirm">Lưu lại</button>

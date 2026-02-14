@@ -31,7 +31,7 @@ public class DBContext {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
             String url = "jdbc:sqlserver://localhost:1433;databaseName=FPT_Food_PRJ";
             // thay user
-            String user = "sa";
+            String user = "anvdse193929";
             // thay password
             String password = "12345";
             connection = DriverManager.getConnection(url, user, password);
