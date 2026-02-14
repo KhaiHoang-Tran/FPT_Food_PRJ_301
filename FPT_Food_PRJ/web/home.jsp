@@ -12,6 +12,10 @@
               href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
         <link rel="stylesheet" href="css/home.css"/>
     </head>
+    <!-- kiểm tra cái list món nếu null dụng c:redirect -->
+    <c:if test="${empty requestScope.foods}">
+        <c:redirect url="homeController"></c:redirect>
+    </c:if>
 
     <body>
 
@@ -21,13 +25,11 @@
             <header>
                 <div class="logo">FPT Food</div>
 
-
-                <a href="login.jsp" class="btn-add"
-                   style="background:white;color:#333;border:1px solid #ddd">
-                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                </a>
-
                 <div>
+                    <a href="login.jsp" class="btn-add"
+                       style="background:white;color:#333;border:1px solid #ddd">
+                        <i class="fas fa-sign-in-alt"></i> Đăng nhập
+                    </a>
                     <a href="logoutController"class="btn-add"
                        style="background:white;color:#333;border:1px solid #ddd">
                         <i class="fas fa-sign-in-alt"></i> Đăng xuất
@@ -183,31 +185,38 @@
             <div class="cart-footer">
 
                 <!-- VOUCHER -->
-                <form class="voucher-section">
-                    <input type="text"
+                <form class="voucher-section" action="applyVoucher" method="post">
+                    <input type="text" name="code"
                            class="voucher-input"
                            placeholder="Mã giảm giá (VD: SALE10)">
-                    <button type="button" class="btn-apply">Áp dụng</button>
+                    <button type="submit" class="btn-apply">Áp dụng</button>
                 </form>
 
+                <c:if test="${not empty voucherError}">
+                    <p style="color: red;text-align: center">${voucherError}</p>
+                </c:if>
+
+                <!--TẠM TÍNH-->
                 <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
                     <span>Tạm tính:</span>
                     <span>
-                        <fmt:formatNumber value="${finalTotal != null ? finalTotal : 0}"
-                                          pattern="#,###"/>đ
+                        <fmt:formatNumber value="${total}" pattern="#,###"/>đ
                     </span>
                 </div>
 
+                <!--GIẢM GIÁ-->
                 <div style="display:flex;justify-content:space-between;margin-bottom:10px;color:var(--primary);">
                     <span>Giảm giá:</span>
-                    <span>-0đ</span>
+                    <span>
+                        -<fmt:formatNumber value="${discount}" pattern="#,###"/>đ
+                    </span>
                 </div>
 
+                <!--TỔNG CỘNG-->
                 <div style="display:flex;justify-content:space-between;font-weight:bold;font-size:18px;">
                     <span>Tổng cộng:</span>
                     <span>
-                        <fmt:formatNumber value="${finalTotal != null ? finalTotal : 0}"
-                                          pattern="#,###"/>đ
+                        <fmt:formatNumber value="${finalTotal}" pattern="#,###"/>đ
                     </span>
                 </div>
 
